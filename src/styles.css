@@ -2,8 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-html { scroll-behavior: smooth; }
-body { margin: 0; background: #06110b; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body { margin: 0; background: #06110b; overflow-x: hidden; max-width: 100vw; }
+#root { max-width: 100vw; overflow-x: hidden; }
+* { box-sizing: border-box; }
+select, button, input { max-width: 100%; }
+
+/* Mobile safety fixes for the admin scheduler */
+@media (max-width: 640px) {
+  body { width: 100vw; }
+  [class*="min-w-\\[390px\\]"] { min-width: 0 !important; width: 100% !important; }
+  [class*="overflow-hidden"] { overflow: visible; }
+  [class*="grid-cols-\\[48px_minmax"] { grid-template-columns: 42px minmax(0, 1fr) !important; }
+  [class*="grid-cols-\\[58px_1fr"] { grid-template-columns: 42px minmax(0, 1fr) !important; }
+  [class*="rounded-\\[1.7rem\\]"] { border-radius: 1.1rem !important; }
+}
+
 .animate-fadeSlide { animation: fadeSlide .75s cubic-bezier(.22,1,.36,1) both; }
 .animate-screenChange { animation: screenChange .65s cubic-bezier(.22,1,.36,1) both; }
 @keyframes fadeSlide {
