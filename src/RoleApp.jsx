@@ -1,4 +1,12 @@
 import AdminPro from './AdminPro.jsx';
+import './visual-theme.css';
+
+const ADMIN_STAFF_HOME_ADDRESSES = {
+  kristina: 'Челябинск, ул. Лесопарковая, 7, кв. 18',
+  vera: 'Челябинск, ул. Сони Кривой, 42, кв. 31',
+  alina: 'Челябинск, пр-т Ленина, 71, кв. 56',
+  natalia: 'Челябинск, ул. Братьев Кашириных, 88, кв. 12',
+};
 
 function name(user) {
   return [user?.name, user?.surname].filter(Boolean).join(' ') || user?.login || 'Пользователь';
@@ -8,8 +16,24 @@ function roleLabel(role) {
   return { admin: 'Администратор', therapist: 'Массажист', client: 'Клиент' }[role] || role;
 }
 
+function ensureAdminAddressDemoData() {
+  try {
+    const key = 'lakizaAdminSchedulerStaff';
+    const current = JSON.parse(localStorage.getItem(key) || '[]');
+    if (!Array.isArray(current) || current.length === 0) return;
+    const next = current.map((item) => {
+      const homeAddress = ADMIN_STAFF_HOME_ADDRESSES[item.id];
+      if (!homeAddress) return item;
+      const isHidden = !item.address || item.address === 'служебный адрес скрыт';
+      return isHidden ? { ...item, address: homeAddress } : item;
+    });
+    localStorage.setItem(key, JSON.stringify(next));
+  } catch {}
+}
+
 export default function RoleApp({ user, logout, build }) {
   if (user.role === 'admin') {
+    ensureAdminAddressDemoData();
     return <Shell user={user} logout={logout} build={build}><AdminPro /></Shell>;
   }
 
@@ -31,6 +55,7 @@ function Shell({ user, logout, build, children }) {
       <div className="lakiza-orb lakiza-orb-a" />
       <div className="lakiza-orb lakiza-orb-b" />
       <div className="lakiza-lines" />
+      <SalonDecor />
       <header className="fixed left-0 right-0 top-0 z-50 px-2 pt-2 md:px-8">
         <div className="mx-auto max-w-7xl rounded-[1.15rem] border border-white/10 bg-[#06140d]/88 px-3 py-2 shadow-2xl shadow-black/35 backdrop-blur-xl md:px-5 md:py-3">
           <div className="flex items-center justify-between gap-2">
@@ -56,6 +81,25 @@ function Shell({ user, logout, build, children }) {
         {children}
       </section>
     </main>
+  );
+}
+
+function SalonDecor() {
+  return (
+    <div className="salon-decor" aria-hidden="true">
+      <div className="salon-decor__couch">
+        <span className="salon-decor__pillow" />
+        <span className="salon-decor__leg salon-decor__leg-a" />
+        <span className="salon-decor__leg salon-decor__leg-b" />
+      </div>
+      <div className="salon-decor__hands">
+        <span />
+        <span />
+      </div>
+      <div className="salon-decor__leaf salon-decor__leaf-a" />
+      <div className="salon-decor__leaf salon-decor__leaf-b" />
+      <div className="salon-decor__lamp" />
+    </div>
   );
 }
 
