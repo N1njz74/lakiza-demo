@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+backend/data*.enc.json
+backend/*.sqlite
+backend/*.sqlite3
+backend/node_modules/
+backend/.env
+backend/.env.*
+!backend/.env.example
