@@ -1,6 +1,7 @@
 import AdminPro from './AdminPro.jsx';
 import ClientPortal from './ClientPortal.jsx';
 import './visual-theme.css';
+import './hero-bg.css';
 
 const ACTIVE_BUILD = 'salon-decor-1956';
 const ADMIN_STAFF_DEFAULTS = [
