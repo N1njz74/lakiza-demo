@@ -17,7 +17,7 @@ function injectStyle() {
     .calendar-fx.fx-prev .calendar-fx-grid { animation: lakizaMonthPrev .28s cubic-bezier(.22,1,.36,1); }
     .calendar-fx button { transition: transform .18s ease, background-color .25s ease, box-shadow .25s ease, opacity .25s ease; }
     .calendar-fx button:hover { box-shadow: 0 0 0 1px rgba(213,255,151,.18), 0 0 24px rgba(213,255,151,.08); }
-    #${CLOCK_ID} { margin: 0 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid rgba(213,255,151,.13); border-radius: 14px; background: linear-gradient(135deg, rgba(213,255,151,.08), rgba(0,0,0,.18)); padding: 9px 11px; color: #eaffc8; box-shadow: inset 0 0 24px rgba(213,255,151,.04); }
+    #${CLOCK_ID} { margin: 0 0 10px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; border: 1px solid rgba(213,255,151,.13); border-radius: 14px; background: linear-gradient(135deg, rgba(213,255,151,.08), rgba(0,0,0,.18)); padding: 9px 11px; color: #eaffc8; box-shadow: inset 0 0 24px rgba(213,255,151,.04); }
     #${CLOCK_ID} b { font-size: 19px; letter-spacing: .04em; }
     #${CLOCK_ID} span { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .14em; color: rgba(222,255,185,.58); }
     .lakiza-slot { position: relative; isolation: isolate; overflow: hidden; transition: background-color .95s linear, border-color .95s linear, opacity .95s linear, box-shadow .95s linear; }
@@ -107,7 +107,7 @@ function enhanceClockAndSlots() {
       badge.id = CLOCK_ID;
       title.parentElement?.insertAdjacentElement('afterend', badge);
     }
-    badge.innerHTML = `<div><span>текущее время</span><br><b>${now.label}</b></div><div><span>линия времени: 1 сек</span></div>`;
+    badge.innerHTML = `<div><span>текущее время</span><br><b>${now.label}</b></div>`;
   }
 
   const labels = Array.from(document.querySelectorAll('span')).filter((s) => /^(0[8-9]|1[0-9]):00$/.test(s.textContent.trim()));
