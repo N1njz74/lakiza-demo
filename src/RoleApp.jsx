@@ -1,12 +1,13 @@
 import AdminPro from './AdminPro.jsx';
 import './visual-theme.css';
 
-const ADMIN_STAFF_HOME_ADDRESSES = {
-  kristina: 'Челябинск, ул. Лесопарковая, 7, кв. 18',
-  vera: 'Челябинск, ул. Сони Кривой, 42, кв. 31',
-  alina: 'Челябинск, пр-т Ленина, 71, кв. 56',
-  natalia: 'Челябинск, ул. Братьев Кашириных, 88, кв. 12',
-};
+const ACTIVE_BUILD = 'salon-decor-1956';
+const ADMIN_STAFF_DEFAULTS = [
+  { id: 'kristina', name: 'Кристина Лакиза', title: 'Директор / старший массажист', phone: '+7 900 100-10-01', address: 'Челябинск, ул. Лесопарковая, 7, кв. 18', shift: 0, active: true },
+  { id: 'vera', name: 'Вера Соколова', title: 'Массажист', phone: '+7 900 100-10-02', address: 'Челябинск, ул. Сони Кривой, 42, кв. 31', shift: 1, active: true },
+  { id: 'alina', name: 'Алина Миронова', title: 'Массажист', phone: '+7 900 100-10-03', address: 'Челябинск, пр-т Ленина, 71, кв. 56', shift: 2, active: true },
+  { id: 'natalia', name: 'Наталья Орлова', title: 'Массажист', phone: '+7 900 100-10-04', address: 'Челябинск, ул. Братьев Кашириных, 88, кв. 12', shift: 3, active: true },
+];
 
 function name(user) {
   return [user?.name, user?.surname].filter(Boolean).join(' ') || user?.login || 'Пользователь';
@@ -20,25 +21,28 @@ function ensureAdminAddressDemoData() {
   try {
     const key = 'lakizaAdminSchedulerStaff';
     const current = JSON.parse(localStorage.getItem(key) || '[]');
-    if (!Array.isArray(current) || current.length === 0) return;
+    if (!Array.isArray(current) || current.length === 0) {
+      localStorage.setItem(key, JSON.stringify(ADMIN_STAFF_DEFAULTS));
+      return;
+    }
     const next = current.map((item) => {
-      const homeAddress = ADMIN_STAFF_HOME_ADDRESSES[item.id];
-      if (!homeAddress) return item;
+      const fallback = ADMIN_STAFF_DEFAULTS.find((staff) => staff.id === item.id);
+      if (!fallback) return item;
       const isHidden = !item.address || item.address === 'служебный адрес скрыт';
-      return isHidden ? { ...item, address: homeAddress } : item;
+      return isHidden ? { ...fallback, ...item, address: fallback.address } : item;
     });
     localStorage.setItem(key, JSON.stringify(next));
   } catch {}
 }
 
-export default function RoleApp({ user, logout, build }) {
+export default function RoleApp({ user, logout }) {
   if (user.role === 'admin') {
     ensureAdminAddressDemoData();
-    return <Shell user={user} logout={logout} build={build}><AdminPro /></Shell>;
+    return <Shell user={user} logout={logout}><AdminPro /></Shell>;
   }
 
   return (
-    <Shell user={user} logout={logout} build={build}>
+    <Shell user={user} logout={logout}>
       <div className="rounded-[2rem] border border-white/10 bg-[#07140e]/80 p-5 shadow-2xl shadow-black/30">
         <div className="mb-2 text-xs font-black uppercase tracking-[.18em] text-lime-300/70">рабочий кабинет</div>
         <h1 className="text-4xl font-black tracking-[-.06em] text-lime-50">{user.role === 'therapist' ? 'Кабинет массажиста' : 'Кабинет клиента'}</h1>
@@ -48,7 +52,7 @@ export default function RoleApp({ user, logout, build }) {
   );
 }
 
-function Shell({ user, logout, build, children }) {
+function Shell({ user, logout, children }) {
   return (
     <main className="lakiza-shell min-h-screen overflow-x-hidden bg-[#06110b] text-white">
       <div className="lakiza-bg fixed inset-0" />
@@ -64,14 +68,14 @@ function Shell({ user, logout, build, children }) {
               <div className="min-w-0">
                 <div className="flex min-w-0 items-center gap-2">
                   <div className="truncate text-[10px] font-black uppercase tracking-[.14em] text-lime-300/70">массажный кабинет</div>
-                  <span className="hidden rounded-full border border-lime-200/15 bg-black/20 px-1.5 py-0.5 text-[8px] font-black text-lime-300/55 sm:inline">{build}</span>
+                  <span className="hidden rounded-full border border-lime-200/15 bg-black/20 px-1.5 py-0.5 text-[8px] font-black text-lime-300/55 sm:inline">{ACTIVE_BUILD}</span>
                 </div>
                 <div className="mt-0.5 truncate text-lg font-black leading-none tracking-[.14em] text-lime-100 md:text-xl">«ЛАКИЗА»</div>
                 <div className="truncate text-[11px] font-bold text-emerald-100/55">{roleLabel(user.role)} · {name(user)}</div>
               </div>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
-              <span className="rounded-full border border-lime-200/15 bg-black/20 px-1.5 py-0.5 text-[8px] font-black text-lime-300/55 sm:hidden">{build}</span>
+              <span className="rounded-full border border-lime-200/15 bg-black/20 px-1.5 py-0.5 text-[8px] font-black text-lime-300/55 sm:hidden">{ACTIVE_BUILD}</span>
               <button type="button" onClick={logout} className="rounded-full bg-white/10 px-4 py-2 text-xs font-black text-lime-50 shadow-inner shadow-white/5">Выйти</button>
             </div>
           </div>
