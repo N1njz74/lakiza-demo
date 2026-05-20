@@ -102,6 +102,37 @@ select, button, input { max-width: 100%; }
   [class*="rounded-\\[1.7rem\\]"] { border-radius: 1.1rem !important; }
 }
 
+/* Tight mobile header/content packing: removes the blank decorative band before the tabs. */
+@media (max-width: 640px) {
+  .lakiza-shell > header {
+    padding-top: 4px !important;
+  }
+  .lakiza-shell > header > div {
+    padding-top: 7px !important;
+    padding-bottom: 7px !important;
+    border-radius: 16px !important;
+  }
+  .lakiza-shell > section {
+    padding-top: 76px !important;
+  }
+  .scheduler-fit {
+    gap: 8px !important;
+  }
+  .scheduler-fit > div:first-child {
+    top: 72px !important;
+    margin-top: 0 !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+  }
+  #lakiza-live-clock {
+    margin-bottom: 8px !important;
+    padding: 8px 10px !important;
+  }
+  #lakiza-live-clock > div:last-child {
+    display: none !important;
+  }
+}
+
 .animate-fadeSlide { animation: fadeSlide .75s cubic-bezier(.22,1,.36,1) both; }
 .animate-screenChange { animation: screenChange .65s cubic-bezier(.22,1,.36,1) both; }
 @keyframes fadeSlide {
