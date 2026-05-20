@@ -1,0 +1,104 @@
+.salon-decor {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.salon-decor__couch {
+  position: absolute;
+  right: -70px;
+  bottom: 8%;
+  width: 360px;
+  height: 116px;
+  border-radius: 46px 46px 24px 24px;
+  border: 1px solid rgba(214,255,158,.16);
+  background: linear-gradient(135deg, rgba(219,255,154,.1), rgba(5,18,11,.16));
+  box-shadow: inset 0 0 30px rgba(214,255,158,.08), 0 30px 90px rgba(0,0,0,.22);
+  opacity: .28;
+  transform: rotate(-5deg);
+}
+.salon-decor__pillow {
+  position: absolute;
+  left: 22px;
+  top: -18px;
+  width: 92px;
+  height: 48px;
+  border-radius: 28px;
+  background: rgba(203,255,126,.14);
+  box-shadow: inset 0 0 20px rgba(203,255,126,.1);
+}
+.salon-decor__leg {
+  position: absolute;
+  bottom: -34px;
+  width: 10px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(214,255,158,.18);
+}
+.salon-decor__leg-a { left: 60px; }
+.salon-decor__leg-b { right: 64px; }
+.salon-decor__hands {
+  position: absolute;
+  left: -56px;
+  top: 34%;
+  width: 260px;
+  height: 180px;
+  opacity: .16;
+  transform: rotate(-12deg);
+}
+.salon-decor__hands span {
+  position: absolute;
+  display: block;
+  width: 190px;
+  height: 42px;
+  border: 1px solid rgba(214,255,158,.26);
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(214,255,158,.1));
+  box-shadow: 0 0 26px rgba(197,255,117,.06);
+}
+.salon-decor__hands span:first-child { left: 20px; top: 48px; transform: rotate(26deg); }
+.salon-decor__hands span:last-child { left: 6px; top: 92px; transform: rotate(-8deg); }
+.salon-decor__leaf {
+  position: absolute;
+  width: 130px;
+  height: 54px;
+  border: 1px solid rgba(203,255,126,.24);
+  border-radius: 100% 0 100% 0;
+  background: radial-gradient(circle at 30% 30%, rgba(203,255,126,.22), rgba(11,44,22,.05) 70%);
+  opacity: .22;
+  filter: blur(.2px);
+}
+.salon-decor__leaf::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 50%;
+  height: 1px;
+  background: rgba(214,255,158,.28);
+  transform: rotate(-18deg);
+}
+.salon-decor__leaf-a { right: 4%; top: 20%; transform: rotate(18deg); }
+.salon-decor__leaf-b { left: 6%; bottom: 18%; transform: rotate(-18deg) scale(.82); }
+.salon-decor__lamp {
+  position: absolute;
+  right: 14%;
+  top: 9%;
+  width: 190px;
+  height: 190px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(218,255,158,.16), rgba(218,255,158,.05) 42%, transparent 70%);
+  filter: blur(10px);
+  opacity: .5;
+}
+
+@media (max-width: 640px) {
+  .salon-decor__couch { width: 250px; height: 82px; right: -92px; bottom: 7%; opacity: .18; }
+  .salon-decor__hands { width: 180px; height: 120px; left: -86px; top: 42%; opacity: .12; }
+  .salon-decor__hands span { width: 140px; height: 30px; }
+  .salon-decor__leaf { width: 90px; height: 38px; opacity: .16; }
+  .salon-decor__leaf-a { right: -8%; top: 22%; }
+  .salon-decor__leaf-b { left: -8%; bottom: 16%; }
+  .salon-decor__lamp { right: -12%; top: 8%; width: 150px; height: 150px; opacity: .32; }
+}
