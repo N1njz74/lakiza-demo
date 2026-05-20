@@ -27,6 +27,15 @@ function injectStyle() {
     .lakiza-slot-current { opacity: 1 !important; border-color: rgba(212,255,139,.45) !important; box-shadow: 0 0 0 1px rgba(212,255,139,.2), 0 0 20px rgba(212,255,139,.12) !important; }
     .lakiza-slot-current::after { opacity: 1; }
     .lakiza-slot-future { background-color: rgba(255,255,255,.055) !important; border-color: rgba(190,230,255,.12) !important; }
+    .lakiza-slot-booked { opacity: 1 !important; filter: none !important; background: linear-gradient(135deg, rgba(216,255,131,.98), rgba(139,211,96,.92)) !important; color: #04130a !important; border: 1px solid rgba(233,255,183,.7) !important; box-shadow: 0 0 0 1px rgba(5,19,9,.45), 0 12px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.26) !important; }
+    .lakiza-slot-booked::before { opacity: .22; background: linear-gradient(90deg, rgba(4,18,9,.16), rgba(255,255,255,.12), rgba(35,104,255,.18)); mix-blend-mode: multiply; }
+    .lakiza-slot-booked::after { background: #ffffff; box-shadow: 0 0 0 1px rgba(4,19,10,.35), 0 0 16px rgba(255,255,255,.7); }
+    .lakiza-slot-booked > * { position: relative; z-index: 1; }
+    .lakiza-slot-booked button:first-of-type { color: #021108 !important; text-shadow: 0 1px 0 rgba(255,255,255,.35), 0 0 1px rgba(0,0,0,.55); font-weight: 1000 !important; letter-spacing: -.02em; }
+    .lakiza-slot-booked div, .lakiza-slot-booked span { color: #082313 !important; text-shadow: 0 1px 0 rgba(255,255,255,.22); opacity: 1 !important; }
+    .lakiza-slot-booked [class*="uppercase"] { color: #12351d !important; text-shadow: 0 1px 0 rgba(255,255,255,.28), 0 0 1px rgba(0,0,0,.25); opacity: 1 !important; }
+    .lakiza-slot-booked button:not(:first-of-type) { text-shadow: none !important; }
+    .lakiza-slot-booked button:not(:first-of-type):first-letter { color: inherit; }
     .lakiza-now-badge { position: absolute; right: 8px; top: 6px; border-radius: 999px; background: rgba(7,20,14,.76); color: #d8ff98; padding: 2px 6px; font-size: 8px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; pointer-events: none; }
     @keyframes lakizaMonthNext { from { opacity: .2; transform: translateX(34px) scale(.985); filter: blur(5px); } to { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); } }
     @keyframes lakizaMonthPrev { from { opacity: .2; transform: translateX(-34px) scale(.985); filter: blur(5px); } to { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); } }
@@ -118,8 +127,10 @@ function enhanceClockAndSlots() {
     const date = findDateFor(label);
     const state = slotState(date, hour, now);
     const progress = progressFor(hour, now, state);
+    const booked = Boolean(slot.querySelector('button'));
     slot.classList.add('lakiza-slot');
     slot.classList.remove('lakiza-slot-past', 'lakiza-slot-current', 'lakiza-slot-future');
+    slot.classList.toggle('lakiza-slot-booked', booked);
     slot.classList.add(`lakiza-slot-${state}`);
     slot.style.setProperty('--slot-progress-ratio', String(progress));
     slot.style.setProperty('--slot-x', `${Math.round(slot.getBoundingClientRect().width * progress)}px`);
