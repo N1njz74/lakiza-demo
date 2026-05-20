@@ -30,9 +30,9 @@ function makeEvents() {
   return [
     { id: 'e1', date: d, time: '09:00', duration: 60, staffId: 'kristina', client: 'Ирина Климова', phone: '+7 900 111-22-33', service: 'Спина и шея', status: 'confirmed', note: 'просила мягко', weight: '67', height: '168' },
     { id: 'e2', date: d, time: '14:00', duration: 90, staffId: 'kristina', client: 'Олег Петров', phone: '+7 900 444-55-66', service: 'Классический массаж', status: 'new', note: 'перезвонить', weight: '86', height: '181' },
-    { id: 'e3', date: d, time: '11:00', duration: 60, staffId: 'vera', client: 'Мария Волкова', phone: '+7 900 222-33-44', service: 'Антистресс', status: 'confirmed', note: '', weight: '59', height: '165' },
-    { id: 'e4', date: addDays(d, 1), time: '16:00', duration: 60, staffId: 'alina', client: 'Денис Серов', phone: '+7 900 555-44-33', service: 'Лимфодренаж', status: 'confirmed', note: '' },
-    { id: 'e5', date: addDays(d, 2), time: '18:00', duration: 120, staffId: 'natalia', client: 'Анна Белова', phone: '+7 900 888-77-66', service: 'Курс 4 сеанса', status: 'new', note: '' },
+    { id: 'e3', date: d, time: '11:00', duration: 60, staffId: 'vera', client: 'Мария Волкова', phone: '+7 900 222-33-44', service: 'Антистресс', status: 'confirmed', note: 'не любит сильное давление', weight: '59', height: '165' },
+    { id: 'e4', date: addDays(d, 1), time: '16:00', duration: 60, staffId: 'alina', client: 'Денис Серов', phone: '+7 900 555-44-33', service: 'Лимфодренаж', status: 'confirmed', note: 'курс после тренировки' },
+    { id: 'e5', date: addDays(d, 2), time: '18:00', duration: 120, staffId: 'natalia', client: 'Анна Белова', phone: '+7 900 888-77-66', service: 'Курс 4 сеанса', status: 'new', note: 'подарочный сертификат' },
   ];
 }
 function statusLabel(status) { return { new: 'заявка', confirmed: 'подтверждена', done: 'завершена', cancelled: 'отменена' }[status] || status; }
@@ -41,6 +41,26 @@ function digits(value) { return String(value || '').replace(/\D/g, ''); }
 function clientIdFromEvent(event) { return event.clientId || `client-${digits(event.phone) || String(event.client || '').toLowerCase().replace(/\s+/g, '-')}`; }
 function eventDateTime(event) { return `${event.date}T${event.time || '00:00'}`; }
 function bmi(weight, height) { const w = Number(weight); const h = Number(height) / 100; return w > 0 && h > 0 ? (w / (h * h)).toFixed(1) : '—'; }
+function norm(value) { return String(value || '').toLowerCase().replace(/ё/g, 'е').trim(); }
+function eventBelongsToClient(event, client) { return clientIdFromEvent(event) === client.id; }
+function clientSearchText(client, clientEvents, staff) {
+  return norm([
+    client.name,
+    client.surname,
+    client.phone,
+    digits(client.phone),
+    client.email,
+    client.privateNotes,
+    staffName(staff, client.assignedStaffId),
+    ...clientEvents.flatMap((event) => [event.client, event.phone, digits(event.phone), event.service, event.note, event.status, event.date, event.time]),
+  ].join(' '));
+}
+function searchMatch(client, clientEvents, staff, query) {
+  const q = norm(query);
+  if (!q) return true;
+  const haystack = clientSearchText(client, clientEvents, staff);
+  return q.split(/\s+/).filter(Boolean).every((part) => haystack.includes(part) || haystack.includes(digits(part)));
+}
 
 function buildClients(baseClients, events) {
   const map = new Map();
@@ -54,7 +74,7 @@ function buildClients(baseClients, events) {
         phone: event.phone,
         email: '',
         assignedStaffId: event.staffId,
-        privateNotes: '',
+        privateNotes: event.note ? `Из записи: ${event.note}` : '',
         createdAt: new Date().toISOString(),
       });
     }
@@ -97,7 +117,7 @@ export default function AdminPro() {
     const id = eventOrClient.client ? clientIdFromEvent(eventOrClient) : eventOrClient.id;
     if (!clients.some((client) => client.id === id)) {
       const event = eventOrClient.client ? eventOrClient : events.find((item) => clientIdFromEvent(item) === id);
-      if (event) saveClients([...clients, { id, name: event.client, phone: event.phone, email: '', assignedStaffId: event.staffId, privateNotes: '', createdAt: new Date().toISOString() }]);
+      if (event) saveClients([...clients, { id, name: event.client, phone: event.phone, email: '', assignedStaffId: event.staffId, privateNotes: event.note ? `Из записи: ${event.note}` : '', createdAt: new Date().toISOString() }]);
     }
     setSelectedClientId(id);
   };
@@ -110,7 +130,7 @@ export default function AdminPro() {
       {tab === 'clients' && <ClientsView clients={clientList} events={events} staff={activeStaff} openClient={openClient} />}
       {tab === 'load' && <LoadView staff={activeStaff} events={events} />}
       {tab === 'users' && <UsersView staff={staff} patchStaff={patchStaff} removeStaff={removeStaff} />}
-      {selectedClient && <ClientCard client={selectedClient} staff={activeStaff} events={events.filter((event) => clientIdFromEvent(event) === selectedClient.id)} patchClient={patchClient} patchEvent={patchEvent} removeEvent={removeEvent} close={() => setSelectedClientId(null)} />}
+      {selectedClient && <ClientCard client={selectedClient} staff={activeStaff} events={events.filter((event) => eventBelongsToClient(event, selectedClient))} patchClient={patchClient} patchEvent={patchEvent} removeEvent={removeEvent} close={() => setSelectedClientId(null)} />}
     </div>
   );
 }
@@ -144,27 +164,17 @@ function MiniCalendar({ events, selected, setDate, month, setMonth }) {
   return <div className="w-full overflow-hidden rounded-xl bg-white/[.04] p-2">
     <div className="mb-2 flex items-center justify-between gap-2">
       <button type="button" onClick={() => setMonth(addMonths(month, -1))} className="rounded-lg bg-white/10 px-2 py-2 text-xs font-black text-lime-100">‹</button>
-      <div className="min-w-0 text-center">
-        <div className="truncate text-sm font-black capitalize text-lime-100">{monthTitle(month)}</div>
-        <div className="text-[9px] font-bold text-emerald-50/45">листание по месяцам</div>
-      </div>
+      <div className="min-w-0 text-center"><div className="truncate text-sm font-black capitalize text-lime-100">{monthTitle(month)}</div><div className="text-[9px] font-bold text-emerald-50/45">листание по месяцам</div></div>
       <button type="button" onClick={() => setMonth(addMonths(month, 1))} className="rounded-lg bg-white/10 px-2 py-2 text-xs font-black text-lime-100">›</button>
     </div>
-    <div className="mb-2 grid grid-cols-1 gap-1">
-      <button type="button" onClick={jumpToday} className="rounded-lg bg-lime-200 px-2 py-2 text-[10px] font-black text-emerald-950">Сегодня</button>
-    </div>
+    <div className="mb-2 grid grid-cols-1 gap-1"><button type="button" onClick={jumpToday} className="rounded-lg bg-lime-200 px-2 py-2 text-[10px] font-black text-emerald-950">Сегодня</button></div>
     <div className="grid grid-cols-7 gap-1 pb-1 text-center text-[8px] font-black uppercase tracking-[.08em] text-emerald-50/35"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
     <div className="grid w-full grid-cols-7 gap-1 overflow-hidden">{days.map((d) => { const count = events.filter((e) => e.date === d).length; const outside = d.slice(0, 7) !== visibleMonth; return <button key={d} onClick={() => setDate(d)} className={cx('relative h-9 min-w-0 rounded-lg text-[10px] font-black md:h-11', d === selected ? 'bg-blue-600 text-white ring-2 ring-blue-300/20' : count ? 'bg-lime-200 text-emerald-950' : outside ? 'bg-white/[.04] text-emerald-50/25' : 'bg-white/10 text-emerald-50/60')}><div>{d.slice(8, 10)}</div>{count > 0 && <span className="absolute right-0 top-0 rounded-full bg-emerald-950 px-1 text-[8px] leading-3 text-lime-100">{count}</span>}</button>; })}</div>
   </div>;
 }
 
 function DayBoard({ date, staff, events, patchEvent, removeEvent, openClient }) { return <div className="w-full max-w-full overflow-hidden rounded-[1.1rem] border border-white/10 bg-white/[.05]"><div className="border-b border-white/10 px-3 py-2"><b className="text-xl text-lime-100">{date}</b><div className="text-xs text-emerald-50/45">сетка по массажистам</div></div><div className="grid gap-2 p-2">{staff.map((person) => <StaffColumn key={person.id} person={person} date={date} events={events.filter((e) => e.staffId === person.id)} patchEvent={patchEvent} removeEvent={removeEvent} openClient={openClient} />)}</div></div>; }
-
-function StaffColumn({ person, date, events, patchEvent, removeEvent, openClient }) {
-  const working = isWorking(person, date);
-  return <div className="w-full max-w-full overflow-hidden rounded-xl bg-[#07140e]/80 p-2"><div className="mb-2 flex items-start justify-between gap-2"><div className="min-w-0"><b className="block truncate text-base text-lime-100">{person.name}</b><div className="truncate text-[10px] text-emerald-50/50">{person.title} · {person.phone}</div></div><span className={cx('shrink-0 rounded-full px-2 py-1 text-[10px] font-black', working ? 'bg-lime-200 text-emerald-950' : 'bg-red-500/20 text-red-100')}>{working ? '08–20' : 'вых.'}</span></div><div className="grid gap-1.5">{hours().map((h) => { const item = events.find((e) => e.time === h); return <TimeSlot key={h} hour={h} item={item} working={working} patchEvent={patchEvent} removeEvent={removeEvent} openClient={openClient} />; })}</div></div>;
-}
-
+function StaffColumn({ person, date, events, patchEvent, removeEvent, openClient }) { const working = isWorking(person, date); return <div className="w-full max-w-full overflow-hidden rounded-xl bg-[#07140e]/80 p-2"><div className="mb-2 flex items-start justify-between gap-2"><div className="min-w-0"><b className="block truncate text-base text-lime-100">{person.name}</b><div className="truncate text-[10px] text-emerald-50/50">{person.title} · {person.phone}</div></div><span className={cx('shrink-0 rounded-full px-2 py-1 text-[10px] font-black', working ? 'bg-lime-200 text-emerald-950' : 'bg-red-500/20 text-red-100')}>{working ? '08–20' : 'вых.'}</span></div><div className="grid gap-1.5">{hours().map((h) => { const item = events.find((e) => e.time === h); return <TimeSlot key={h} hour={h} item={item} working={working} patchEvent={patchEvent} removeEvent={removeEvent} openClient={openClient} />; })}</div></div>; }
 function TimeSlot({ hour, item, working, patchEvent, removeEvent, openClient }) {
   if (!working) return <div className="grid grid-cols-[40px_minmax(0,1fr)] gap-1.5"><span className="pt-2 text-[10px] text-emerald-50/30">{hour}</span><div className="min-w-0 rounded-lg bg-red-500/10 px-2 py-2 text-xs text-red-100/45">выходной</div></div>;
   if (!item) return <div className="grid grid-cols-[40px_minmax(0,1fr)] gap-1.5"><span className="pt-2 text-[10px] text-emerald-50/35">{hour}</span><div className="min-w-0 rounded-lg border border-dashed border-white/10 bg-white/[.03] px-2 py-2 text-xs text-emerald-50/35">свободно</div></div>;
@@ -176,29 +186,77 @@ function EventCard({ event, master, patchEvent, removeEvent, openClient }) { ret
 function ListView({ events, staff, filter, setFilter, patchEvent, removeEvent, openClient }) { return <Panel title="Список" note="записи"><Filter staff={staff} value={filter} setValue={setFilter} /><div className="mt-3 grid gap-2">{events.map((e) => <EventCard key={e.id} event={e} master={staffName(staff, e.staffId)} patchEvent={patchEvent} removeEvent={removeEvent} openClient={openClient} />)}</div></Panel>; }
 
 function ClientsView({ clients, events, staff, openClient }) {
-  return <Panel title="Клиенты" note="карточки и история"><div className="grid gap-2">{clients.map((client) => { const clientEvents = events.filter((event) => clientIdFromEvent(event) === client.id); const next = clientEvents.filter((event) => eventDateTime(event) >= `${today()}T00:00`).sort((a, b) => eventDateTime(a).localeCompare(eventDateTime(b)))[0]; return <button key={client.id} type="button" onClick={() => openClient(client)} className="rounded-xl bg-white/10 p-3 text-left"><div className="flex items-start justify-between gap-2"><div className="min-w-0"><b className="block truncate text-lime-100">{client.name}</b><div className="truncate text-xs text-emerald-50/55">{client.phone || 'телефон не указан'} · {staffName(staff, client.assignedStaffId)}</div></div><span className="rounded-full bg-lime-200 px-2 py-1 text-[10px] font-black text-emerald-950">{clientEvents.length} сеанс.</span></div><div className="mt-2 text-xs text-emerald-50/50">Ближайший: {next ? `${next.date} · ${next.time} · ${next.service}` : 'нет будущих записей'}</div></button>; })}</div></Panel>;
+  const [query, setQuery] = useState('');
+  const filtered = clients.filter((client) => searchMatch(client, events.filter((event) => eventBelongsToClient(event, client)), staff, query));
+  return <Panel title="Клиенты" note="поиск по имени, телефону и заметкам">
+    <div className="sticky top-[136px] z-30 mb-3 rounded-2xl border border-white/10 bg-[#07140e]/95 p-2 shadow-xl shadow-black/25 backdrop-blur md:top-[154px]">
+      <div className="flex gap-2">
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Поиск: Ирина, Климова, 900, мягко, сертификат..." className="min-w-0 flex-1 rounded-xl bg-white px-3 py-3 text-sm font-bold text-emerald-950 outline-none placeholder:text-emerald-950/35" />
+        {query && <button type="button" onClick={() => setQuery('')} className="rounded-xl bg-white/10 px-3 text-xs font-black text-lime-100">×</button>}
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1 text-[10px] font-black uppercase tracking-[.08em] text-emerald-50/45">
+        <span className="rounded-full bg-white/10 px-2 py-1">найдено: {filtered.length}</span>
+        <span className="rounded-full bg-white/10 px-2 py-1">всего: {clients.length}</span>
+      </div>
+    </div>
+    <div className="grid gap-2">
+      {filtered.length === 0 && <Empty text="Клиенты не найдены. Попробуй имя, фамилию, цифры телефона или слово из заметки." />}
+      {filtered.map((client) => {
+        const clientEvents = events.filter((event) => eventBelongsToClient(event, client));
+        const next = clientEvents.filter((event) => eventDateTime(event) >= `${today()}T00:00`).sort((a, b) => eventDateTime(a).localeCompare(eventDateTime(b)))[0];
+        const noteHit = query && norm(client.privateNotes).includes(norm(query));
+        return <button key={client.id} type="button" onClick={() => openClient(client)} className="rounded-xl bg-white/10 p-3 text-left transition hover:bg-white/[.14] active:scale-[.99]">
+          <div className="flex items-start justify-between gap-2"><div className="min-w-0"><b className="block truncate text-lime-100">{client.name}</b><div className="truncate text-xs text-emerald-50/55">{client.phone || 'телефон не указан'} · {staffName(staff, client.assignedStaffId)}</div></div><span className="rounded-full bg-lime-200 px-2 py-1 text-[10px] font-black text-emerald-950">{clientEvents.length} сеанс.</span></div>
+          <div className="mt-2 text-xs text-emerald-50/50">Ближайший: {next ? `${next.date} · ${next.time} · ${next.service}` : 'нет будущих записей'}</div>
+          {client.privateNotes && <div className={cx('mt-2 line-clamp-2 rounded-lg px-2 py-1 text-[11px]', noteHit ? 'bg-lime-200 text-emerald-950' : 'bg-black/20 text-emerald-50/45')}>Заметка: {client.privateNotes}</div>}
+        </button>;
+      })}
+    </div>
+  </Panel>;
 }
 
 function ClientCard({ client, staff, events, patchClient, patchEvent, removeEvent, close }) {
   const [draft, setDraft] = useState(client);
+  const [section, setSection] = useState('overview');
   const sortedEvents = [...events].sort((a, b) => eventDateTime(a).localeCompare(eventDateTime(b)));
-  const upcoming = sortedEvents.filter((event) => eventDateTime(event) >= `${today()}T00:00`);
-  const completed = sortedEvents.filter((event) => event.status === 'done' || eventDateTime(event) < `${today()}T00:00`);
+  const upcoming = sortedEvents.filter((event) => eventDateTime(event) >= `${today()}T00:00` && event.status !== 'cancelled');
+  const history = sortedEvents.filter((event) => eventDateTime(event) < `${today()}T00:00` || ['done', 'cancelled'].includes(event.status));
   const lastWithMetrics = [...sortedEvents].reverse().find((event) => event.weight || event.height);
   const latestWeight = lastWithMetrics?.weight || '—';
   const latestHeight = lastWithMetrics?.height || '—';
   const privateNoteStaff = draft.assignedStaffId || staff[0]?.id || '';
+  const nextEvent = upcoming[0];
+  const sections = [
+    ['overview', 'Обзор', 'контакты'],
+    ['upcoming', 'Будущие', String(upcoming.length)],
+    ['history', 'История', String(history.length)],
+    ['metrics', 'Вес/рост', bmi(latestWeight, latestHeight)],
+    ['notes', 'Пометки', 'закрыто'],
+  ];
 
-  return <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/70 p-2 backdrop-blur-sm"><div className="mx-auto my-4 max-w-3xl rounded-[1.4rem] border border-white/10 bg-[#07140e] p-3 text-white shadow-2xl md:p-5"><div className="mb-3 flex items-start justify-between gap-2"><div><div className="text-[10px] font-black uppercase tracking-[.16em] text-lime-300/65">карточка клиента</div><h2 className="text-3xl font-black tracking-[-.05em] text-lime-50">{client.name}</h2><p className="text-sm text-emerald-50/55">{client.phone || 'телефон не указан'} · {client.email || 'email не указан'}</p></div><button type="button" onClick={close} className="rounded-full bg-white/10 px-4 py-2 text-xs font-black">Закрыть</button></div>
-    <div className="grid gap-2 sm:grid-cols-4"><Stat label="Всего" value={sortedEvents.length} /><Stat label="Будущие" value={upcoming.length} /><Stat label="Завершено" value={completed.length} /><Stat label="ИМТ" value={bmi(latestWeight, latestHeight)} /></div>
-    <div className="mt-3 grid gap-2 sm:grid-cols-2"><Input label="Имя клиента" value={draft.name || ''} set={(v) => setDraft((p) => ({ ...p, name: v }))} /><Input label="Телефон" value={draft.phone || ''} set={(v) => setDraft((p) => ({ ...p, phone: v }))} /><Input label="Email" value={draft.email || ''} set={(v) => setDraft((p) => ({ ...p, email: v }))} /><label className="block"><span className="mb-1 block text-[10px] font-black uppercase tracking-[.14em] text-lime-200/60">Закреплённый массажист</span><select value={draft.assignedStaffId || ''} onChange={(e) => setDraft((p) => ({ ...p, assignedStaffId: e.target.value }))} className="w-full rounded-xl bg-white px-3 py-3 text-sm font-bold text-emerald-950">{staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label></div>
-    <label className="mt-3 block"><span className="mb-1 block text-[10px] font-black uppercase tracking-[.14em] text-lime-200/60">Пометки по клиенту</span><textarea value={draft.privateNotes || ''} onChange={(e) => setDraft((p) => ({ ...p, privateNotes: e.target.value }))} rows={4} className="w-full rounded-xl bg-white px-3 py-3 text-sm font-bold text-emerald-950" placeholder={`Видит администратор и закреплённый массажист: ${staffName(staff, privateNoteStaff)}`} /></label>
-    <div className="mt-1 rounded-xl bg-lime-200/10 px-3 py-2 text-[11px] font-bold text-lime-100/80">Пометки недоступны другим массажистам и клиентам. В реальном бэкенде это надо закрепить серверными правами, не только интерфейсом.</div>
-    <button type="button" onClick={() => patchClient(client.id, draft)} className="mt-3 rounded-full bg-lime-200 px-4 py-2 text-xs font-black text-emerald-950">Сохранить карточку</button>
-    <h3 className="mt-5 text-xl font-black text-lime-50">Расписание клиента</h3>
-    <div className="mt-2 grid gap-2">{sortedEvents.length === 0 && <Empty text="Записей пока нет." />}{sortedEvents.map((event) => <ClientEventEditor key={event.id} event={event} staff={staff} patchEvent={patchEvent} removeEvent={removeEvent} />)}</div>
+  return <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/70 p-2 backdrop-blur-sm"><div className="mx-auto my-3 max-w-3xl rounded-[1.4rem] border border-white/10 bg-[#07140e] p-3 text-white shadow-2xl md:p-5">
+    <div className="sticky top-2 z-20 -mx-1 mb-3 rounded-2xl border border-white/10 bg-[#07140e]/95 p-2 shadow-xl shadow-black/30 backdrop-blur">
+      <div className="mb-3 flex items-start justify-between gap-2"><div className="min-w-0"><div className="text-[10px] font-black uppercase tracking-[.16em] text-lime-300/65">карточка клиента</div><h2 className="truncate text-2xl font-black tracking-[-.05em] text-lime-50 md:text-3xl">{draft.name || client.name}</h2><p className="truncate text-sm text-emerald-50/55">{draft.phone || 'телефон не указан'} · {draft.email || 'email не указан'}</p></div><button type="button" onClick={close} className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-xs font-black">Закрыть</button></div>
+      <div className="grid grid-cols-5 gap-1 rounded-xl bg-white/8 p-1">{sections.map(([id, label, mini]) => <button key={id} type="button" onClick={() => setSection(id)} className={cx('rounded-lg px-1 py-2 text-center transition active:scale-[.98]', section === id ? 'bg-lime-200 text-emerald-950' : 'bg-white/10 text-emerald-50/70')}><span className="block text-[10px] font-black md:text-xs">{label}</span><span className="mt-0.5 block truncate text-[8px] font-bold opacity-60">{mini}</span></button>)}</div>
+    </div>
+
+    <div className="grid gap-2 sm:grid-cols-4"><Stat label="Всего" value={sortedEvents.length} /><Stat label="Будущие" value={upcoming.length} /><Stat label="Завершено" value={history.length} /><Stat label="ИМТ" value={bmi(latestWeight, latestHeight)} /></div>
+
+    {section === 'overview' && <section className="mt-3 grid gap-3">
+      <div className="rounded-xl bg-lime-200/10 p-3"><div className="text-[10px] font-black uppercase tracking-[.14em] text-lime-200/60">Ближайший сеанс</div><b className="mt-1 block text-lime-100">{nextEvent ? `${nextEvent.date} · ${nextEvent.time}` : 'нет будущих записей'}</b><div className="text-sm text-emerald-50/55">{nextEvent ? `${nextEvent.service} · ${staffName(staff, nextEvent.staffId)}` : 'можно назначить во вкладке Будущие или через календарь'}</div></div>
+      <div className="grid gap-2 sm:grid-cols-2"><Input label="Имя клиента" value={draft.name || ''} set={(v) => setDraft((p) => ({ ...p, name: v }))} /><Input label="Телефон" value={draft.phone || ''} set={(v) => setDraft((p) => ({ ...p, phone: v }))} /><Input label="Email" value={draft.email || ''} set={(v) => setDraft((p) => ({ ...p, email: v }))} /><label className="block"><span className="mb-1 block text-[10px] font-black uppercase tracking-[.14em] text-lime-200/60">Закреплённый массажист</span><select value={draft.assignedStaffId || ''} onChange={(e) => setDraft((p) => ({ ...p, assignedStaffId: e.target.value }))} className="w-full rounded-xl bg-white px-3 py-3 text-sm font-bold text-emerald-950">{staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label></div>
+      <button type="button" onClick={() => patchClient(client.id, draft)} className="rounded-full bg-lime-200 px-4 py-2 text-xs font-black text-emerald-950">Сохранить общие данные</button>
+    </section>}
+
+    {section === 'upcoming' && <ClientScheduleBlock title="Предстоящие сеансы" events={upcoming} staff={staff} patchEvent={patchEvent} removeEvent={removeEvent} empty="Будущих записей нет." />}
+    {section === 'history' && <ClientScheduleBlock title="История сеансов" events={history} staff={staff} patchEvent={patchEvent} removeEvent={removeEvent} empty="История пока пустая." />}
+    {section === 'metrics' && <section className="mt-3 grid gap-2"><h3 className="text-xl font-black text-lime-50">Динамика веса и роста</h3>{sortedEvents.length === 0 && <Empty text="Сеансов пока нет." />}{sortedEvents.map((event) => <MetricRow key={event.id} event={event} staff={staff} patchEvent={patchEvent} removeEvent={removeEvent} />)}</section>}
+    {section === 'notes' && <section className="mt-3 grid gap-2"><label className="block"><span className="mb-1 block text-[10px] font-black uppercase tracking-[.14em] text-lime-200/60">Пометки по клиенту</span><textarea value={draft.privateNotes || ''} onChange={(e) => setDraft((p) => ({ ...p, privateNotes: e.target.value }))} rows={6} className="w-full rounded-xl bg-white px-3 py-3 text-sm font-bold text-emerald-950" placeholder={`Видит администратор и закреплённый массажист: ${staffName(staff, privateNoteStaff)}`} /></label><div className="rounded-xl bg-lime-200/10 px-3 py-2 text-[11px] font-bold text-lime-100/80">Пометки участвуют в поиске клиентов. Клиентам и другим массажистам это поле недоступно в интерфейсе.</div><button type="button" onClick={() => patchClient(client.id, draft)} className="w-fit rounded-full bg-lime-200 px-4 py-2 text-xs font-black text-emerald-950">Сохранить пометки</button></section>}
   </div></div>;
 }
+
+function ClientScheduleBlock({ title, events, staff, patchEvent, removeEvent, empty }) { return <section className="mt-3 grid gap-2"><div className="flex items-center justify-between gap-2"><h3 className="text-xl font-black text-lime-50">{title}</h3><span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-black text-lime-100">{events.length}</span></div>{events.length === 0 && <Empty text={empty} />}{events.map((event) => <ClientEventEditor key={event.id} event={event} staff={staff} patchEvent={patchEvent} removeEvent={removeEvent} />)}</section>; }
+function MetricRow({ event, staff, patchEvent, removeEvent }) { return <div className="rounded-xl bg-white/10 p-3"><div className="mb-2 flex items-center justify-between gap-2"><div><b className="text-lime-100">{event.date} · {event.time}</b><div className="text-xs text-emerald-50/50">{event.service} · {staffName(staff, event.staffId)}</div></div><span className="rounded-full bg-lime-200 px-2 py-1 text-[10px] font-black text-emerald-950">ИМТ {bmi(event.weight, event.height)}</span></div><ClientEventEditor event={event} staff={staff} patchEvent={patchEvent} removeEvent={removeEvent} /></div>; }
 
 function ClientEventEditor({ event, staff, patchEvent, removeEvent }) {
   const [draft, setDraft] = useState(event);
