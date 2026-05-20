@@ -1,5 +1,6 @@
 const STYLE_ID = 'lakiza-calendar-enhance-style';
 const CLOCK_ID = 'lakiza-live-clock';
+let rafQueued = false;
 
 function injectStyle() {
   if (document.getElementById(STYLE_ID)) return;
@@ -19,12 +20,14 @@ function injectStyle() {
     #${CLOCK_ID} { margin: 0 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid rgba(213,255,151,.13); border-radius: 14px; background: linear-gradient(135deg, rgba(213,255,151,.08), rgba(0,0,0,.18)); padding: 9px 11px; color: #eaffc8; box-shadow: inset 0 0 24px rgba(213,255,151,.04); }
     #${CLOCK_ID} b { font-size: 19px; letter-spacing: .04em; }
     #${CLOCK_ID} span { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .14em; color: rgba(222,255,185,.58); }
-    .lakiza-slot { position: relative; isolation: isolate; overflow: hidden; transition: background-color .7s ease, border-color .7s ease, opacity .7s ease, box-shadow .7s ease; }
-    .lakiza-slot::before { content: ''; position: absolute; inset: 0 auto 0 0; z-index: -1; width: var(--slot-progress, 0%); background: linear-gradient(90deg, rgba(8,42,24,.48), rgba(207,255,118,.22), rgba(49,111,255,.18)); transition: width .7s ease; }
-    .lakiza-slot-past { opacity: .54 !important; filter: saturate(.62); background-color: rgba(255,255,255,.035) !important; border-color: rgba(255,255,255,.05) !important; }
+    .lakiza-slot { position: relative; isolation: isolate; overflow: hidden; transition: background-color .95s linear, border-color .95s linear, opacity .95s linear, box-shadow .95s linear; }
+    .lakiza-slot::before { content: ''; position: absolute; inset: 0; z-index: -1; transform-origin: left center; transform: scaleX(var(--slot-progress-ratio, 0)); background: linear-gradient(90deg, rgba(8,42,24,.56), rgba(207,255,118,.24), rgba(49,111,255,.18)); transition: transform .95s linear; will-change: transform; }
+    .lakiza-slot::after { content: ''; position: absolute; top: 0; bottom: 0; left: var(--slot-x, -10px); width: 2px; background: rgba(220,255,150,.95); box-shadow: 0 0 12px rgba(220,255,150,.75); opacity: 0; transition: left .95s linear, opacity .25s ease; pointer-events: none; }
+    .lakiza-slot-past { opacity: .52 !important; filter: saturate(.62); background-color: rgba(255,255,255,.035) !important; border-color: rgba(255,255,255,.05) !important; }
     .lakiza-slot-current { opacity: 1 !important; border-color: rgba(212,255,139,.45) !important; box-shadow: 0 0 0 1px rgba(212,255,139,.2), 0 0 20px rgba(212,255,139,.12) !important; }
-    .lakiza-slot-current::after { content: 'сейчас'; position: absolute; right: 8px; top: 6px; border-radius: 999px; background: rgba(7,20,14,.76); color: #d8ff98; padding: 2px 6px; font-size: 8px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-    .lakiza-slot-future { background-color: rgba(255,255,255,.055) !important; }
+    .lakiza-slot-current::after { opacity: 1; }
+    .lakiza-slot-future { background-color: rgba(255,255,255,.055) !important; border-color: rgba(190,230,255,.12) !important; }
+    .lakiza-now-badge { position: absolute; right: 8px; top: 6px; border-radius: 999px; background: rgba(7,20,14,.76); color: #d8ff98; padding: 2px 6px; font-size: 8px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; pointer-events: none; }
     @keyframes lakizaMonthNext { from { opacity: .2; transform: translateX(34px) scale(.985); filter: blur(5px); } to { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); } }
     @keyframes lakizaMonthPrev { from { opacity: .2; transform: translateX(-34px) scale(.985); filter: blur(5px); } to { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); } }
   `;
@@ -35,27 +38,33 @@ function pad(n) { return String(n).padStart(2, '0'); }
 function localDate(d) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
 function clock() {
   const d = new Date();
-  return { date: localDate(d), minutes: d.getHours() * 60 + d.getMinutes(), label: `${pad(d.getHours())}:${pad(d.getMinutes())}` };
+  const seconds = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
+  return { date: localDate(d), seconds, label: `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` };
 }
 function slotState(date, hour, now) {
-  const h = Number(hour.slice(0, 2));
-  const start = h * 60;
-  const end = start + 60;
+  const start = Number(hour.slice(0, 2)) * 3600;
+  const end = start + 3600;
   if (date < now.date) return 'past';
   if (date > now.date) return 'future';
-  if (now.minutes >= end) return 'past';
-  if (now.minutes < start) return 'future';
+  if (now.seconds >= end) return 'past';
+  if (now.seconds < start) return 'future';
   return 'current';
 }
 function findDateFor(el) {
   let node = el;
-  for (let i = 0; i < 7 && node; i += 1) {
+  for (let i = 0; i < 8 && node; i += 1) {
     const text = node.textContent || '';
     const match = text.match(/20\d{2}-\d{2}-\d{2}/);
     if (match) return match[0];
     node = node.parentElement;
   }
   return clock().date;
+}
+function progressFor(hour, now, state) {
+  if (state === 'past') return 1;
+  if (state === 'future') return 0;
+  const start = Number(hour.slice(0, 2)) * 3600;
+  return Math.max(0, Math.min(1, (now.seconds - start) / 3600));
 }
 
 function pulse(root, dir) {
@@ -98,7 +107,7 @@ function enhanceClockAndSlots() {
       badge.id = CLOCK_ID;
       title.parentElement?.insertAdjacentElement('afterend', badge);
     }
-    badge.innerHTML = `<div><span>текущее время</span><br><b>${now.label}</b></div><div><span>обновление 1 раз в 30 сек</span></div>`;
+    badge.innerHTML = `<div><span>текущее время</span><br><b>${now.label}</b></div><div><span>линия времени: 1 сек</span></div>`;
   }
 
   const labels = Array.from(document.querySelectorAll('span')).filter((s) => /^(0[8-9]|1[0-9]):00$/.test(s.textContent.trim()));
@@ -108,24 +117,43 @@ function enhanceClockAndSlots() {
     if (!slot) return;
     const date = findDateFor(label);
     const state = slotState(date, hour, now);
-    const start = Number(hour.slice(0, 2)) * 60;
-    const progress = state === 'past' ? 100 : state === 'current' ? Math.max(0, Math.min(100, Math.round(((now.minutes - start) / 60) * 100))) : 0;
+    const progress = progressFor(hour, now, state);
     slot.classList.add('lakiza-slot');
     slot.classList.remove('lakiza-slot-past', 'lakiza-slot-current', 'lakiza-slot-future');
     slot.classList.add(`lakiza-slot-${state}`);
-    slot.style.setProperty('--slot-progress', `${progress}%`);
+    slot.style.setProperty('--slot-progress-ratio', String(progress));
+    slot.style.setProperty('--slot-x', `${Math.round(slot.getBoundingClientRect().width * progress)}px`);
+    let badge = slot.querySelector(':scope > .lakiza-now-badge');
+    if (state === 'current') {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'lakiza-now-badge';
+        badge.textContent = 'сейчас';
+        slot.appendChild(badge);
+      }
+    } else if (badge) {
+      badge.remove();
+    }
   });
 }
 
 function run() {
+  if (document.hidden) return;
   enhanceCalendar();
   enhanceClockAndSlots();
+}
+function scheduleRun() {
+  if (rafQueued) return;
+  rafQueued = true;
+  window.requestAnimationFrame(() => { rafQueued = false; run(); });
 }
 
 if (!window.__lakizaCalendarEnhance) {
   window.__lakizaCalendarEnhance = true;
-  window.addEventListener('load', run);
-  window.setInterval(run, 30000);
-  const observer = new MutationObserver(() => window.requestAnimationFrame(run));
+  window.addEventListener('load', scheduleRun);
+  window.addEventListener('resize', scheduleRun);
+  document.addEventListener('visibilitychange', scheduleRun);
+  window.setInterval(scheduleRun, 1000);
+  const observer = new MutationObserver(scheduleRun);
   observer.observe(document.documentElement, { childList: true, subtree: true });
 }
