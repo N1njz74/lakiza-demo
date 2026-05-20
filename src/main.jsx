@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import InteractiveApp from './InteractiveApp.jsx';
+import RoleApp from './RoleApp.jsx';
 import './styles.css';
 
-const BUILD = 'auth-demo-1808';
+const BUILD = 'role-ui-1812';
 const STAFF_USERS = [
   { login: 'admin', password: 'admin123', role: 'admin', name: 'Администратор' },
   { login: 'master', password: 'master123', role: 'therapist', name: 'Массажист' },
@@ -89,59 +89,55 @@ function AuthGate() {
     setMessage('');
   };
 
-  if (!user) {
-    return (
-      <main className="min-h-screen bg-[#041008] px-4 py-6 text-white selection:bg-lime-200 selection:text-emerald-950">
-        <div className="fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(190,255,120,.28),transparent_32%),radial-gradient(circle_at_90%_20%,rgba(37,99,235,.22),transparent_28%),linear-gradient(180deg,#041008_0%,#0b2214_58%,#041008_100%)]" />
-        <section className="relative mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl items-center gap-6 lg:grid-cols-[1fr_420px]">
-          <div className="rounded-[2.5rem] border border-white/10 bg-white/[.06] p-6 shadow-2xl shadow-black/30 backdrop-blur-xl md:p-10">
-            <div className="mb-5 inline-flex rounded-full bg-lime-200 px-4 py-2 text-xs font-black uppercase tracking-[.18em] text-emerald-950">новая версия {BUILD}</div>
-            <h1 className="text-5xl font-black leading-[.9] tracking-[-.07em] text-lime-50 md:text-7xl">Лакиза<br /><span className="text-lime-200">личный кабинет</span></h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/70">Добавлен демо-вход для администратора и массажиста, регистрация клиента и отдельный экран авторизации. Это пока статическая демо-авторизация на localStorage, без серверной защиты.</p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <Info title="Админ" text="admin / admin123" />
-              <Info title="Массажист" text="master / master123" />
-              <Info title="Клиент" text="регистрация на сайте" />
-            </div>
-          </div>
+  const updateUser = (nextUser) => {
+    saveJson('lakizaDemoUser', nextUser);
+    setUser(nextUser);
+  };
 
-          <div className="rounded-[2.2rem] border border-white/10 bg-[#07140e]/90 p-5 shadow-2xl shadow-black/40 backdrop-blur-xl">
-            <div className="mb-4 grid grid-cols-2 gap-2 rounded-2xl bg-white/5 p-1">
-              <button type="button" onClick={() => { setMode('login'); setMessage(''); }} className={`rounded-xl px-4 py-3 text-sm font-black ${mode === 'login' ? 'bg-lime-200 text-emerald-950' : 'text-emerald-50/65'}`}>Вход</button>
-              <button type="button" onClick={() => { setMode('register'); setMessage(''); }} className={`rounded-xl px-4 py-3 text-sm font-black ${mode === 'register' ? 'bg-lime-200 text-emerald-950' : 'text-emerald-50/65'}`}>Регистрация</button>
-            </div>
-
-            <div className="space-y-3">
-              {mode === 'register' && (
-                <>
-                  <Input label="Имя" value={form.name} onChange={(value) => setField('name', value)} placeholder="Иван" />
-                  <Input label="Телефон" value={form.phone} onChange={(value) => setField('phone', value)} placeholder="+7 ..." />
-                </>
-              )}
-              <Input label="Логин" value={form.login} onChange={(value) => setField('login', value)} placeholder={mode === 'login' ? 'admin или master' : 'придумай логин'} />
-              <Input label="Пароль" type="password" value={form.password} onChange={(value) => setField('password', value)} placeholder={mode === 'login' ? 'admin123 или master123' : 'минимум 4 символа'} />
-            </div>
-
-            {message && <div className="mt-4 rounded-2xl bg-red-500/15 px-4 py-3 text-sm font-bold text-red-100">{message}</div>}
-
-            <button type="button" onClick={mode === 'login' ? signIn : register} className="mt-5 w-full rounded-full bg-lime-200 px-5 py-4 text-lg font-black text-emerald-950 shadow-xl shadow-lime-950/20">
-              {mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
-            </button>
-          </div>
-        </section>
-      </main>
-    );
+  if (user) {
+    return <RoleApp user={user} logout={logout} onUserUpdate={updateUser} build={BUILD} />;
   }
 
   return (
-    <>
-      <RuntimePatch />
-      <div className="fixed bottom-3 left-3 right-3 z-[9999] flex items-center justify-between gap-2 rounded-2xl bg-lime-300 px-3 py-2 text-[11px] font-black text-emerald-950 shadow-lg md:left-3 md:right-auto md:rounded-full">
-        <span>{BUILD} · {user.role} · {user.name}</span>
-        <button type="button" onClick={logout} className="rounded-full bg-emerald-950 px-3 py-1 text-lime-100">выйти</button>
-      </div>
-      <InteractiveApp />
-    </>
+    <main className="min-h-screen bg-[#041008] px-4 py-6 text-white selection:bg-lime-200 selection:text-emerald-950">
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(190,255,120,.28),transparent_32%),radial-gradient(circle_at_90%_20%,rgba(37,99,235,.22),transparent_28%),linear-gradient(180deg,#041008_0%,#0b2214_58%,#041008_100%)]" />
+      <section className="relative mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl items-center gap-6 lg:grid-cols-[1fr_420px]">
+        <div className="rounded-[2.5rem] border border-white/10 bg-white/[.06] p-6 shadow-2xl shadow-black/30 backdrop-blur-xl md:p-10">
+          <div className="mb-5 inline-flex rounded-full bg-lime-200 px-4 py-2 text-xs font-black uppercase tracking-[.18em] text-emerald-950">новая версия {BUILD}</div>
+          <h1 className="text-5xl font-black leading-[.9] tracking-[-.07em] text-lime-50 md:text-7xl">Лакиза<br /><span className="text-lime-200">личный кабинет</span></h1>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/70">Вход определяет роль. Клиент видит запись и свои визиты. Массажист видит рабочие записи. Администратор управляет ролями и всеми записями.</p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <Info title="Админ" text="admin / admin123" />
+            <Info title="Массажист" text="master / master123" />
+            <Info title="Клиент" text="регистрация" />
+          </div>
+        </div>
+
+        <div className="rounded-[2.2rem] border border-white/10 bg-[#07140e]/90 p-5 shadow-2xl shadow-black/40 backdrop-blur-xl">
+          <div className="mb-4 grid grid-cols-2 gap-2 rounded-2xl bg-white/5 p-1">
+            <button type="button" onClick={() => { setMode('login'); setMessage(''); }} className={`rounded-xl px-4 py-3 text-sm font-black ${mode === 'login' ? 'bg-lime-200 text-emerald-950' : 'text-emerald-50/65'}`}>Вход</button>
+            <button type="button" onClick={() => { setMode('register'); setMessage(''); }} className={`rounded-xl px-4 py-3 text-sm font-black ${mode === 'register' ? 'bg-lime-200 text-emerald-950' : 'text-emerald-50/65'}`}>Регистрация</button>
+          </div>
+
+          <div className="space-y-3">
+            {mode === 'register' && (
+              <>
+                <Input label="Имя" value={form.name} onChange={(value) => setField('name', value)} placeholder="Иван" />
+                <Input label="Телефон" value={form.phone} onChange={(value) => setField('phone', value)} placeholder="+7 ..." />
+              </>
+            )}
+            <Input label="Логин" value={form.login} onChange={(value) => setField('login', value)} placeholder={mode === 'login' ? 'admin или master' : 'придумай логин'} />
+            <Input label="Пароль" type="password" value={form.password} onChange={(value) => setField('password', value)} placeholder={mode === 'login' ? 'admin123 или master123' : 'минимум 4 символа'} />
+          </div>
+
+          {message && <div className="mt-4 rounded-2xl bg-red-500/15 px-4 py-3 text-sm font-bold text-red-100">{message}</div>}
+
+          <button type="button" onClick={mode === 'login' ? signIn : register} className="mt-5 w-full rounded-full bg-lime-200 px-5 py-4 text-lg font-black text-emerald-950 shadow-xl shadow-lime-950/20">
+            {mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
+          </button>
+        </div>
+      </section>
+    </main>
   );
 }
 
@@ -155,33 +151,6 @@ function Input({ label, value, onChange, placeholder, type = 'text' }) {
       <span className="mb-1 block text-xs font-black uppercase tracking-[.16em] text-lime-200/60">{label}</span>
       <input type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="w-full rounded-2xl border border-white/10 bg-white px-4 py-4 font-bold text-emerald-950 outline-none placeholder:text-emerald-950/35" />
     </label>
-  );
-}
-
-function RuntimePatch() {
-  useEffect(() => {
-    document.documentElement.dataset.build = BUILD;
-  }, []);
-
-  return (
-    <style>{`
-      @media (max-width: 640px) {
-        header > div > div:first-child > div:last-child > button:last-child {
-          width: 2.5rem !important;
-          height: 2.5rem !important;
-          padding-left: 0 !important;
-          padding-right: 0 !important;
-          overflow: hidden !important;
-          font-size: 0 !important;
-          white-space: nowrap !important;
-        }
-        header > div > div:first-child > div:last-child > button:last-child::after {
-          content: 'D';
-          font-size: 0.875rem;
-          line-height: 1;
-        }
-      }
-    `}</style>
   );
 }
 
