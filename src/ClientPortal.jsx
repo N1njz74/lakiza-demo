@@ -53,7 +53,7 @@ export default function ClientPortal({ user, onUserUpdate }) {
   const upcoming = myEvents.filter((event) => eventDateTime(event) >= `${today()}T00:00` && event.status !== 'cancelled');
   const history = myEvents.filter((event) => eventDateTime(event) < `${today()}T00:00` || ['done', 'cancelled'].includes(event.status));
   const nextEvent = upcoming[0];
-  const lastMetrics = [...myEvents].reverse().find((event) => event.weight || event.height) || profile;
+  const lastMetrics = [...myEvents].reverse().find((event) => event.weight || event.height) || null;
 
   const saveEvents = (next) => { setEvents(next); saveJson(STORAGE_EVENTS, next); };
   const saveProfile = () => {
@@ -82,9 +82,8 @@ export default function ClientPortal({ user, onUserUpdate }) {
       service: draft.service,
       status: 'new',
       note: draft.comment,
-      weight: draft.weight,
-      height: draft.height,
       source: 'client',
+      metricsSource: 'therapist_after_session',
     };
     saveEvents([...events, nextEvent]);
     setDraft(makeBookingDraft({ ...user, phone: profile.phone }, staff));
@@ -119,8 +118,6 @@ function makeProfile(user, clients) {
     email: client?.email || user?.email || '',
     preferredStaffId: client?.assignedStaffId || 'kristina',
     clientPublicNote: client?.clientPublicNote || '',
-    weight: '',
-    height: '',
   };
 }
 function makeBookingDraft(user, staff) {
@@ -131,8 +128,6 @@ function makeBookingDraft(user, staff) {
     service: services[0].title,
     duration: services[0].duration,
     comment: '',
-    weight: '',
-    height: '',
   };
 }
 
@@ -143,7 +138,8 @@ function ClientTabs({ tab, setTab }) {
 
 function HomeSection({ user, nextEvent, upcoming, history, lastMetrics, staff, setTab }) {
   return <Panel eyebrow="личный кабинет" title={`Здравствуйте, ${user.name || 'клиент'}`}>
-    <div className="grid gap-2 sm:grid-cols-4"><Stat label="Будущие" value={upcoming.length} /><Stat label="История" value={history.length} /><Stat label="Вес" value={lastMetrics?.weight || '—'} /><Stat label="ИМТ" value={bmi(lastMetrics?.weight, lastMetrics?.height)} /></div>
+    <div className="grid gap-2 sm:grid-cols-4"><Stat label="Будущие" value={upcoming.length} /><Stat label="История" value={history.length} /><Stat label="Последний вес" value={lastMetrics?.weight || '—'} /><Stat label="ИМТ" value={bmi(lastMetrics?.weight, lastMetrics?.height)} /></div>
+    <div className="mt-3 rounded-xl bg-lime-200/10 p-3 text-xs font-bold text-lime-100/85">Вес, рост и ИМТ вносит массажист после сеанса в кабинете. Клиент здесь только видит последние замеры.</div>
     <div className="mt-3 rounded-2xl bg-lime-200 p-4 text-emerald-950 shadow-xl shadow-black/20">
       <div className="text-[10px] font-black uppercase tracking-[.14em] opacity-60">ближайший сеанс</div>
       <h2 className="mt-1 text-2xl font-black">{nextEvent ? `${nextEvent.date} · ${nextEvent.time}` : 'пока нет записи'}</h2>
@@ -168,10 +164,13 @@ function ClientEventCard({ event, staff, requestChange, cancelEvent }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState({ date: event.date, time: event.time, note: 'Прошу перенести запись' });
   return <div className="rounded-2xl bg-white/10 p-3"><div className="flex items-start justify-between gap-2"><div className="min-w-0"><b className="block truncate text-lime-100">{event.date} · {event.time}</b><div className="truncate text-sm text-emerald-50/70">{event.service} · {staffName(staff, event.staffId)}</div><div className="mt-1 text-xs text-emerald-50/45">{event.duration} мин · {event.note || 'без комментария'}</div></div><span className={cx('shrink-0 rounded-full px-2 py-1 text-[10px] font-black', statusTone(event.status))}>{statusLabel(event.status)}</span></div>
+    {(event.weight || event.height) && <div className="mt-3 grid grid-cols-3 gap-1 rounded-xl bg-black/20 p-2"><MiniMetric label="Вес" value={event.weight ? `${event.weight} кг` : '—'} /><MiniMetric label="Рост" value={event.height ? `${event.height} см` : '—'} /><MiniMetric label="ИМТ" value={bmi(event.weight, event.height)} /></div>}
+    {!event.weight && !event.height && event.status === 'done' && <div className="mt-3 rounded-xl bg-white/5 p-2 text-xs text-emerald-50/45">Замеры ещё не внесены массажистом.</div>}
     {event.status !== 'done' && event.status !== 'cancelled' && <div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => setOpen(!open)} className="rounded-full bg-lime-200 px-3 py-2 text-xs font-black text-emerald-950">Перенести</button><button type="button" onClick={() => cancelEvent(event)} className="rounded-full bg-red-500/20 px-3 py-2 text-xs font-black text-red-100">Отменить</button></div>}
     {open && <div className="mt-3 grid gap-2 rounded-xl bg-black/20 p-2"><div className="grid grid-cols-2 gap-2"><Input label="Новая дата" type="date" value={draft.date} set={(v) => setDraft((p) => ({ ...p, date: v }))} /><Input label="Новое время" value={draft.time} set={(v) => setDraft((p) => ({ ...p, time: v }))} /></div><Input label="Комментарий" value={draft.note} set={(v) => setDraft((p) => ({ ...p, note: v }))} /><button type="button" onClick={() => requestChange(event, draft)} className="w-fit rounded-full bg-lime-200 px-4 py-2 text-xs font-black text-emerald-950">Отправить запрос</button></div>}
   </div>;
 }
+function MiniMetric({ label, value }) { return <div><div className="text-[8px] font-black uppercase tracking-[.12em] text-lime-200/45">{label}</div><b className="text-sm text-lime-100">{value}</b></div>; }
 
 function BookingSection({ draft, setDraft, staff, createBooking, events }) {
   const service = serviceByTitle(draft.service);
@@ -182,7 +181,7 @@ function BookingSection({ draft, setDraft, staff, createBooking, events }) {
   return <Panel eyebrow="новая запись" title="Выбор времени">
     <div className="grid gap-2 sm:grid-cols-2"><Input label="Дата" type="date" value={draft.date} set={(v) => set('date', v)} /><label className="block"><span className="mb-1 block text-[10px] font-black uppercase tracking-[.14em] text-lime-200/60">Массажист</span><select value={draft.staffId} onChange={(e) => set('staffId', e.target.value)} className="w-full rounded-xl bg-white px-3 py-3 text-sm font-bold text-emerald-950">{staff.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}</select></label><label className="block sm:col-span-2"><span className="mb-1 block text-[10px] font-black uppercase tracking-[.14em] text-lime-200/60">Услуга</span><select value={draft.service} onChange={(e) => { const next = serviceByTitle(e.target.value); setDraft((p) => ({ ...p, service: next.title, duration: next.duration })); }} className="w-full rounded-xl bg-white px-3 py-3 text-sm font-bold text-emerald-950">{services.map((item) => <option key={item.id} value={item.title}>{item.title} · {item.duration} мин · {item.price}</option>)}</select></label></div>
     <div className="mt-3 rounded-2xl bg-white/8 p-3"><div className="mb-2 flex items-center justify-between"><b className="text-lime-100">Свободное время</b><span className="text-xs text-emerald-50/45">занятые скрыты</span></div><div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6">{hours().map((hour) => { const free = availableHours.includes(hour); return <button key={hour} type="button" disabled={!free} onClick={() => set('time', hour)} className={cx('rounded-xl px-2 py-2 text-xs font-black', draft.time === hour ? 'bg-blue-600 text-white' : free ? 'bg-lime-200 text-emerald-950' : 'bg-white/5 text-emerald-50/25')}>{hour}</button>; })}</div></div>
-    <div className="mt-3 grid gap-2 sm:grid-cols-3"><Input label="Вес, кг" value={draft.weight} set={(v) => set('weight', v)} /><Input label="Рост, см" value={draft.height} set={(v) => set('height', v)} /><div className="rounded-xl bg-black/20 p-3"><span className="text-[10px] font-black uppercase tracking-[.14em] text-lime-200/60">ИМТ</span><b className="mt-1 block text-lg text-lime-100">{bmi(draft.weight, draft.height)}</b></div></div>
+    <div className="mt-3 rounded-xl border border-lime-200/15 bg-lime-200/10 p-3 text-sm text-lime-100/85"><b className="block text-lime-100">Вес и рост не вводятся клиентом.</b><span className="text-emerald-50/65">Взвешивание проходит в кабинете. После сеанса замеры вносит массажист, а клиент потом видит их в истории сеансов.</span></div>
     <label className="mt-3 block"><span className="mb-1 block text-[10px] font-black uppercase tracking-[.14em] text-lime-200/60">Комментарий администратору</span><textarea value={draft.comment} onChange={(e) => set('comment', e.target.value)} rows={3} className="w-full rounded-xl bg-white px-3 py-3 text-sm font-bold text-emerald-950" placeholder="Пожелания, больные зоны, удобное окно для звонка" /></label>
     <div className="mt-3 rounded-xl bg-lime-200/10 p-3 text-sm text-emerald-50/70">Заявка уйдёт администратору. До подтверждения она отмечается как «заявка».</div>
     <button type="button" onClick={createBooking} className="mt-3 w-full rounded-full bg-lime-200 px-5 py-4 text-sm font-black text-emerald-950">Отправить заявку · {service.duration} мин</button>
@@ -194,7 +193,7 @@ function ProfileSection({ profile, setProfile, staff, saveProfile }) {
   return <Panel eyebrow="мои данные" title="Профиль клиента">
     <div className="grid gap-2 sm:grid-cols-2"><Input label="ФИО" value={profile.name} set={(v) => set('name', v)} /><Input label="Телефон" value={profile.phone} set={(v) => set('phone', v)} /><Input label="Email для напоминаний" value={profile.email} set={(v) => set('email', v)} /><label className="block"><span className="mb-1 block text-[10px] font-black uppercase tracking-[.14em] text-lime-200/60">Предпочитаемый массажист</span><select value={profile.preferredStaffId} onChange={(e) => set('preferredStaffId', e.target.value)} className="w-full rounded-xl bg-white px-3 py-3 text-sm font-bold text-emerald-950">{staff.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}</select></label></div>
     <label className="mt-3 block"><span className="mb-1 block text-[10px] font-black uppercase tracking-[.14em] text-lime-200/60">Мои пожелания</span><textarea value={profile.clientPublicNote} onChange={(e) => set('clientPublicNote', e.target.value)} rows={4} className="w-full rounded-xl bg-white px-3 py-3 text-sm font-bold text-emerald-950" placeholder="Например: не делать сильное давление, болит поясница, удобнее вечером" /></label>
-    <div className="mt-3 rounded-xl bg-lime-200/10 p-3 text-xs font-bold text-lime-100/80">Административные закрытые пометки клиента здесь не показываются. Клиент видит только свои данные и свои записи.</div>
+    <div className="mt-3 rounded-xl bg-lime-200/10 p-3 text-xs font-bold text-lime-100/80">Административные закрытые пометки клиента здесь не показываются. Вес/рост клиент не редактирует: эти данные вносит массажист после сеанса.</div>
     <button type="button" onClick={saveProfile} className="mt-3 rounded-full bg-lime-200 px-4 py-2 text-xs font-black text-emerald-950">Сохранить профиль</button>
   </Panel>;
 }
