@@ -16,6 +16,10 @@ function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(
 function saveJson(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch {} }
 function today() { return new Date().toISOString().slice(0, 10); }
 function addDays(date, shift) { const d = new Date(`${date}T12:00:00`); d.setDate(d.getDate() + shift); return d.toISOString().slice(0, 10); }
+function monthStart(date) { const d = new Date(`${date}T12:00:00`); d.setDate(1); return d.toISOString().slice(0, 10); }
+function addMonths(date, shift) { const d = new Date(`${date}T12:00:00`); d.setDate(1); d.setMonth(d.getMonth() + shift); return d.toISOString().slice(0, 10); }
+function monthTitle(date) { return new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' }).format(new Date(`${date}T12:00:00`)); }
+function calendarDays(month) { const start = monthStart(month); const first = new Date(`${start}T12:00:00`); const offset = (first.getDay() + 6) % 7; const gridStart = addDays(start, -offset); return Array.from({ length: 42 }, (_, i) => addDays(gridStart, i)); }
 function dayIndex(date) { return Math.floor(new Date(`${date}T00:00:00`).getTime() / 86400000); }
 function isWorking(person, date) { return ((dayIndex(date) + Number(person.shift || 0)) % 4) < 2; }
 function cx(...items) { return items.filter(Boolean).join(' '); }
@@ -69,13 +73,15 @@ function TopTabs({ tab, setTab }) {
 }
 
 function CalendarView({ mode, setMode, date, setDate, staff, shownStaff, events, filter, setFilter, patchEvent, removeEvent }) {
+  const [calendarMonth, setCalendarMonth] = useState(monthStart(date));
   const dates = mode === 'week' ? Array.from({ length: 7 }, (_, i) => addDays(date, i)) : [date];
+  const pickDate = (nextDate) => { setDate(nextDate); setCalendarMonth(monthStart(nextDate)); };
   return <Panel title="Ежедневник" note="08:00–20:00 · 2/2">
     <div className="mb-3 grid gap-2 md:grid-cols-[1fr_260px]">
       <Segment value={mode} setValue={setMode} options={[['day','День'],['week','Нед.'],['agenda','Список']]} />
       <Filter staff={staff} value={filter} setValue={setFilter} />
     </div>
-    <MiniCalendar events={events} selected={date} setDate={setDate} />
+    <MiniCalendar events={events} selected={date} setDate={pickDate} month={calendarMonth} setMonth={setCalendarMonth} />
     {mode === 'agenda' ? <Agenda events={events.filter((e) => e.date === date)} staff={staff} patchEvent={patchEvent} removeEvent={removeEvent} /> : <div className="mt-3 grid gap-3">{dates.map((d) => <DayBoard key={d} date={d} staff={shownStaff} events={events.filter((e) => e.date === d)} patchEvent={patchEvent} removeEvent={removeEvent} />)}</div>}
   </Panel>;
 }
@@ -83,9 +89,27 @@ function CalendarView({ mode, setMode, date, setDate, staff, shownStaff, events,
 function Segment({ value, setValue, options }) { return <div className="grid grid-cols-3 gap-1 rounded-xl bg-white/10 p-1">{options.map(([id, label]) => <button key={id} onClick={() => setValue(id)} className={cx('rounded-lg px-1 py-2 text-[11px] font-black', value === id ? 'bg-blue-600 text-white' : 'text-emerald-50/70')}>{label}</button>)}</div>; }
 function Filter({ staff, value, setValue }) { return <select value={value} onChange={(e) => setValue(e.target.value)} className="w-full rounded-xl bg-white px-3 py-3 text-sm font-black text-emerald-950"><option value="all">Все массажисты</option>{staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select>; }
 
-function MiniCalendar({ events, selected, setDate }) {
-  const days = Array.from({ length: 21 }, (_, i) => addDays(today(), i - 3));
-  return <div className="grid w-full grid-cols-7 gap-1 overflow-hidden">{days.map((d) => { const count = events.filter((e) => e.date === d).length; return <button key={d} onClick={() => setDate(d)} className={cx('relative h-10 min-w-0 rounded-lg text-[10px] font-black md:h-12', d === selected ? 'bg-blue-600 text-white ring-2 ring-blue-300/20' : count ? 'bg-lime-200 text-emerald-950' : 'bg-white/10 text-emerald-50/60')}><div>{d.slice(8, 10)}</div><div className="text-[8px] opacity-70">{d.slice(5, 7)}</div>{count > 0 && <span className="absolute right-0 top-0 rounded-full bg-emerald-950 px-1 text-[8px] leading-3 text-lime-100">{count}</span>}</button>; })}</div>;
+function MiniCalendar({ events, selected, setDate, month, setMonth }) {
+  const days = calendarDays(month);
+  const visibleMonth = month.slice(0, 7);
+  const jumpToday = () => { const now = today(); setMonth(monthStart(now)); setDate(now); };
+  return <div className="w-full overflow-hidden rounded-xl bg-white/[.04] p-2">
+    <div className="mb-2 flex items-center justify-between gap-2">
+      <button type="button" onClick={() => setMonth(addMonths(month, -1))} className="rounded-lg bg-white/10 px-2 py-2 text-xs font-black text-lime-100">‹</button>
+      <div className="min-w-0 text-center">
+        <div className="truncate text-sm font-black capitalize text-lime-100">{monthTitle(month)}</div>
+        <div className="text-[9px] font-bold text-emerald-50/45">можно листать на год вперёд и дальше</div>
+      </div>
+      <button type="button" onClick={() => setMonth(addMonths(month, 1))} className="rounded-lg bg-white/10 px-2 py-2 text-xs font-black text-lime-100">›</button>
+    </div>
+    <div className="mb-2 grid grid-cols-3 gap-1">
+      <button type="button" onClick={jumpToday} className="rounded-lg bg-lime-200 px-2 py-2 text-[10px] font-black text-emerald-950">Сегодня</button>
+      <button type="button" onClick={() => setMonth(addMonths(month, 3))} className="rounded-lg bg-white/10 px-2 py-2 text-[10px] font-black text-white">+3 мес</button>
+      <button type="button" onClick={() => setMonth(addMonths(month, 12))} className="rounded-lg bg-white/10 px-2 py-2 text-[10px] font-black text-white">+1 год</button>
+    </div>
+    <div className="grid grid-cols-7 gap-1 pb-1 text-center text-[8px] font-black uppercase tracking-[.08em] text-emerald-50/35"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+    <div className="grid w-full grid-cols-7 gap-1 overflow-hidden">{days.map((d) => { const count = events.filter((e) => e.date === d).length; const outside = d.slice(0, 7) !== visibleMonth; return <button key={d} onClick={() => setDate(d)} className={cx('relative h-9 min-w-0 rounded-lg text-[10px] font-black md:h-11', d === selected ? 'bg-blue-600 text-white ring-2 ring-blue-300/20' : count ? 'bg-lime-200 text-emerald-950' : outside ? 'bg-white/[.04] text-emerald-50/25' : 'bg-white/10 text-emerald-50/60')}><div>{d.slice(8, 10)}</div>{count > 0 && <span className="absolute right-0 top-0 rounded-full bg-emerald-950 px-1 text-[8px] leading-3 text-lime-100">{count}</span>}</button>; })}</div>
+  </div>;
 }
 
 function DayBoard({ date, staff, events, patchEvent, removeEvent }) { return <div className="w-full max-w-full overflow-hidden rounded-[1.1rem] border border-white/10 bg-white/[.05]"><div className="border-b border-white/10 px-3 py-2"><b className="text-xl text-lime-100">{date}</b><div className="text-xs text-emerald-50/45">сетка по массажистам</div></div><div className="grid gap-2 p-2">{staff.map((person) => <StaffColumn key={person.id} person={person} date={date} events={events.filter((e) => e.staffId === person.id)} patchEvent={patchEvent} removeEvent={removeEvent} />)}</div></div>; }
