@@ -26,17 +26,17 @@ export default function RoleApp({ user, logout, build }) {
 
 function Shell({ user, logout, build, children }) {
   return (
-    <main className="min-h-screen bg-[#06110b] text-white">
+    <main className="min-h-screen overflow-x-hidden bg-[#06110b] text-white">
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(190,255,120,.22),transparent_34%),linear-gradient(180deg,#06110b,#0b2114,#06110b)]" />
       <header className="fixed left-0 right-0 top-0 z-50 px-2 pt-2 md:px-8">
-        <div className="mx-auto max-w-7xl rounded-[1.15rem] border border-white/10 bg-[#07140e]/94 px-3 py-2 shadow-2xl shadow-black/30 backdrop-blur-xl md:px-5 md:py-3">
+        <div className="mx-auto max-w-7xl rounded-[1.1rem] border border-white/10 bg-[#07140e]/94 px-3 py-2 shadow-2xl shadow-black/30 backdrop-blur-xl md:px-5 md:py-3">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <div className="flex min-w-0 items-center gap-2">
-                <div className="truncate text-[10px] font-black uppercase tracking-[.14em] text-lime-300/70">массажный кабинет «Лакиза»</div>
+                <div className="truncate text-[10px] font-black uppercase tracking-[.14em] text-lime-300/70">массажный кабинет</div>
                 <span className="hidden rounded-full border border-lime-200/15 bg-black/20 px-1.5 py-0.5 text-[8px] font-black text-lime-300/55 sm:inline">{build}</span>
               </div>
-              <div className="mt-0.5 truncate text-lg font-black leading-none tracking-[.18em] text-lime-100 md:text-xl">ЛАКИЗА</div>
+              <div className="mt-0.5 truncate text-lg font-black leading-none tracking-[.14em] text-lime-100 md:text-xl">«ЛАКИЗА»</div>
               <div className="truncate text-[11px] font-bold text-emerald-100/55">{roleLabel(user.role)} · {name(user)}</div>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
@@ -46,7 +46,7 @@ function Shell({ user, logout, build, children }) {
           </div>
         </div>
       </header>
-      <section className="relative mx-auto max-w-7xl px-2 pb-24 pt-[100px] md:px-8 md:pt-28">
+      <section className="relative mx-auto max-w-7xl overflow-x-hidden px-2 pb-24 pt-[92px] md:px-8 md:pt-28">
         {children}
       </section>
     </main>
