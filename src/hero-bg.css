@@ -1,16 +1,34 @@
-/* Generated spa background based on the planned first image: dark massage room, green moss, soft neon. */
-.lakiza-bg {
+/* Visible generated spa background: dark massage room, moss, green neon, depth. */
+.lakiza-shell {
+  background:
+    radial-gradient(circle at 8% 10%, rgba(208,255,126,.2), transparent 28%),
+    radial-gradient(circle at 92% 18%, rgba(143,255,83,.16), transparent 30%),
+    #06110b !important;
+}
+
+.lakiza-shell::before {
+  content: '';
   pointer-events: none;
+  position: fixed;
+  inset: 0;
   z-index: 0;
   background:
-    linear-gradient(180deg, rgba(3, 12, 7, .18) 0%, rgba(6, 17, 11, .7) 38%, rgba(6, 17, 11, .98) 100%),
-    radial-gradient(circle at 15% 16%, rgba(207, 255, 128, .18), transparent 24%),
-    radial-gradient(circle at 86% 17%, rgba(179, 255, 96, .22), transparent 21%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 941 1672' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3CradialGradient id='g1' cx='20%25' cy='8%25' r='48%25'%3E%3Cstop offset='0' stop-color='%23bfff63' stop-opacity='.24'/%3E%3Cstop offset='.45' stop-color='%2307140c' stop-opacity='.08'/%3E%3Cstop offset='1' stop-color='%23040d08' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='g2' cx='90%25' cy='20%25' r='32%25'%3E%3Cstop offset='0' stop-color='%23cbff79' stop-opacity='.32'/%3E%3Cstop offset='1' stop-color='%23040d08' stop-opacity='0'/%3E%3C/radialGradient%3E%3ClinearGradient id='v' x1='0' x2='0' y1='0' y2='1'%3E%3Cstop offset='0' stop-color='%23030b06'/%3E%3Cstop offset='.42' stop-color='%2306170c'/%3E%3Cstop offset='1' stop-color='%23020a06'/%3E%3C/linearGradient%3E%3Cfilter id='blur'%3E%3CfeGaussianBlur stdDeviation='10'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='941' height='1672' fill='url(%23v)'/%3E%3Crect width='941' height='1672' fill='url(%23g1)'/%3E%3Crect width='941' height='1672' fill='url(%23g2)'/%3E%3Cg opacity='.35' stroke='%23d8ff88' stroke-width='2' fill='none'%3E%3Cpath d='M-60 1420 C160 1120 280 1280 520 1060 S810 900 1040 650'/%3E%3Cpath d='M-40 160 C180 40 320 150 430 -30'/%3E%3Cpath d='M510 1660 C620 1390 760 1280 1050 1180'/%3E%3C/g%3E%3Cg opacity='.16' stroke='%239bd86b' stroke-width='1'%3E%3Cpath d='M0 370 H941 M0 740 H941 M0 1110 H941 M0 1480 H941 M180 0 V1672 M360 0 V1672 M540 0 V1672 M720 0 V1672'/%3E%3C/g%3E%3Cg opacity='.42'%3E%3Crect x='690' y='935' width='230' height='88' rx='6' fill='%237dff58' opacity='.18'/%3E%3Crect x='635' y='1018' width='270' height='130' rx='20' fill='%23040c08' opacity='.86'/%3E%3Crect x='670' y='996' width='125' height='28' rx='14' fill='%2388ff69' opacity='.22'/%3E%3Cpath d='M72 735 h160 v390 H72z' fill='%23040a07' opacity='.52'/%3E%3Cpath d='M88 735 v390 M112 735 v390 M136 735 v390 M160 735 v390 M184 735 v390 M208 735 v390' stroke='%23d4ff88' opacity='.18'/%3E%3C/g%3E%3Cg filter='url(%23blur)' opacity='.45'%3E%3Ccircle cx='760' cy='660' r='125' fill='%231d4428'/%3E%3Ccircle cx='60' cy='1340' r='190' fill='%232b5c32'/%3E%3Ccircle cx='880' cy='1420' r='230' fill='%23296032'/%3E%3C/g%3E%3Cg opacity='.5'%3E%3Cpath d='M850 120 C900 160 905 220 875 270 C842 225 824 177 850 120Z' fill='%237bca64'/%3E%3Cpath d='M890 210 C940 232 958 285 937 333 C898 305 875 260 890 210Z' fill='%239dea76'/%3E%3Cpath d='M30 1260 C120 1185 190 1220 230 1290 C150 1315 80 1310 30 1260Z' fill='%235aa347'/%3E%3Cpath d='M720 700 C795 642 885 668 925 740 C835 762 762 755 720 700Z' fill='%23589d48' opacity='.6'/%3E%3C/g%3E%3Crect x='0' y='0' width='941' height='1672' fill='%23040d08' opacity='.18'/%3E%3C/svg%3E"),
-    linear-gradient(180deg, #06110b 0%, #0a2114 48%, #06110b 100%) !important;
-  background-size: cover, auto, auto, cover, auto !important;
-  background-position: center top, center, center, center top, center !important;
-  background-repeat: no-repeat !important;
+    linear-gradient(180deg, rgba(2, 9, 5, .12) 0%, rgba(6, 17, 11, .3) 34%, rgba(6, 17, 11, .86) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 941 1672' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3CradialGradient id='haloA' cx='13%25' cy='11%25' r='42%25'%3E%3Cstop offset='0' stop-color='%23d7ff7b' stop-opacity='.42'/%3E%3Cstop offset='.45' stop-color='%23285932' stop-opacity='.18'/%3E%3Cstop offset='1' stop-color='%23050f09' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='haloB' cx='87%25' cy='18%25' r='36%25'%3E%3Cstop offset='0' stop-color='%23bfff55' stop-opacity='.34'/%3E%3Cstop offset='.4' stop-color='%231c562d' stop-opacity='.2'/%3E%3Cstop offset='1' stop-color='%23050f09' stop-opacity='0'/%3E%3C/radialGradient%3E%3ClinearGradient id='wall' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0' stop-color='%23020905'/%3E%3Cstop offset='.38' stop-color='%230b2413'/%3E%3Cstop offset='1' stop-color='%23030c07'/%3E%3C/linearGradient%3E%3Cfilter id='blur'%3E%3CfeGaussianBlur stdDeviation='14'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='941' height='1672' fill='url(%23wall)'/%3E%3Crect width='941' height='1672' fill='url(%23haloA)'/%3E%3Crect width='941' height='1672' fill='url(%23haloB)'/%3E%3Cg opacity='.22' stroke='%23d9ff8a' stroke-width='1'%3E%3Cpath d='M0 250H941M0 500H941M0 750H941M0 1000H941M0 1250H941M0 1500H941M120 0V1672M300 0V1672M480 0V1672M660 0V1672M840 0V1672'/%3E%3C/g%3E%3Cg opacity='.52' fill='none' stroke='%23d9ff8a' stroke-linecap='round'%3E%3Cpath d='M-90 1370 C130 1130 310 1270 510 1030 S790 840 1050 630' stroke-width='5' opacity='.26'/%3E%3Cpath d='M-60 210 C150 70 310 130 460 -50' stroke-width='4' opacity='.24'/%3E%3Cpath d='M450 1660 C570 1340 750 1240 1060 1110' stroke-width='4' opacity='.22'/%3E%3C/g%3E%3Cg opacity='.72'%3E%3Crect x='620' y='930' width='310' height='145' rx='34' fill='%23040c08' opacity='.78'/%3E%3Crect x='674' y='886' width='178' height='44' rx='22' fill='%23d3ff83' opacity='.28'/%3E%3Crect x='704' y='1004' width='210' height='56' rx='26' fill='%238fff62' opacity='.18'/%3E%3Cpath d='M58 730 h184 v430 H58z' fill='%23040a07' opacity='.55'/%3E%3Cpath d='M84 730v430M114 730v430M144 730v430M174 730v430M204 730v430' stroke='%23d4ff88' opacity='.28'/%3E%3C/g%3E%3Cg filter='url(%23blur)' opacity='.58'%3E%3Ccircle cx='790' cy='690' r='135' fill='%23275c31'/%3E%3Ccircle cx='60' cy='1320' r='210' fill='%23306b37'/%3E%3Ccircle cx='865' cy='1410' r='245' fill='%232a7035'/%3E%3C/g%3E%3Cg opacity='.72'%3E%3Cpath d='M812 92 C878 142 887 230 839 294 C795 222 778 157 812 92Z' fill='%2382d060'/%3E%3Cpath d='M886 198 C944 230 962 300 929 360 C880 320 858 258 886 198Z' fill='%23b3ff76'/%3E%3Cpath d='M28 1248 C132 1168 215 1220 258 1292 C160 1326 78 1308 28 1248Z' fill='%2372bd52'/%3E%3Cpath d='M690 710 C786 622 890 670 930 746 C826 780 748 766 690 710Z' fill='%238adb61' opacity='.72'/%3E%3C/g%3E%3Crect width='941' height='1672' fill='%23040d08' opacity='.1'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #06110b 0%, #0a2114 48%, #06110b 100%);
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  opacity: .98;
+}
+
+.lakiza-bg {
+  opacity: .72 !important;
+  background:
+    radial-gradient(circle at 16% 10%, rgba(207,255,128,.33), transparent 24%),
+    radial-gradient(circle at 84% 16%, rgba(179,255,96,.3), transparent 22%),
+    radial-gradient(circle at 50% 42%, rgba(103,255,92,.09), transparent 35%),
+    linear-gradient(180deg, rgba(2,9,5,.06), rgba(2,9,5,.72)) !important;
 }
 
 .lakiza-bg::before {
@@ -18,8 +36,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at center 18%, transparent 0 24%, rgba(3, 10, 6, .5) 64%, rgba(3, 10, 6, .84) 100%),
-    linear-gradient(90deg, rgba(4, 13, 8, .16), rgba(4, 13, 8, .78) 52%, rgba(4, 13, 8, .22));
+    radial-gradient(ellipse at center 18%, transparent 0 34%, rgba(3, 10, 6, .42) 70%, rgba(3, 10, 6, .76) 100%),
+    linear-gradient(90deg, rgba(4, 13, 8, .08), rgba(4, 13, 8, .5) 52%, rgba(4, 13, 8, .08));
 }
 
 .lakiza-shell > header > div,
@@ -30,7 +48,8 @@
 }
 
 @media (max-width: 640px) {
-  .lakiza-bg {
-    background-position: center top, center, center, center top, center !important;
+  .lakiza-shell::before {
+    background-position: center top;
+    opacity: 1;
   }
 }
