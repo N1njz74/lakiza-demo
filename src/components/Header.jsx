@@ -1,6 +1,8 @@
 import Logo from './Logo.jsx';
 import { roles } from '../data.js';
 
+const buildMarker = 'build: marker-2026-05-20-1745';
+
 export default function Header({ view, setView, role, setRole, onStartDemo }) {
   const tabs = role === 'client'
     ? [['home', 'Главная'], ['services', 'Сеансы'], ['schedule', 'Запись']]
@@ -31,6 +33,9 @@ export default function Header({ view, setView, role, setRole, onStartDemo }) {
               <span className="hidden md:inline">Демо</span>
             </button>
           </div>
+        </div>
+        <div className="mt-2 rounded-full bg-lime-300 px-3 py-1 text-center text-[10px] font-bold text-emerald-950 md:text-xs">
+          {buildMarker}
         </div>
       </div>
     </header>
