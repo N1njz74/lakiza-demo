@@ -1,4 +1,5 @@
 import AdminPro from './AdminPro.jsx';
+import ClientPortal from './ClientPortal.jsx';
 import './visual-theme.css';
 
 const ACTIVE_BUILD = 'salon-decor-1956';
@@ -35,18 +36,22 @@ function ensureAdminAddressDemoData() {
   } catch {}
 }
 
-export default function RoleApp({ user, logout }) {
+export default function RoleApp({ user, logout, onUserUpdate }) {
   if (user.role === 'admin') {
     ensureAdminAddressDemoData();
     return <Shell user={user} logout={logout}><AdminPro /></Shell>;
+  }
+
+  if (user.role === 'client') {
+    return <Shell user={user} logout={logout}><ClientPortal user={user} onUserUpdate={onUserUpdate} /></Shell>;
   }
 
   return (
     <Shell user={user} logout={logout}>
       <div className="rounded-[2rem] border border-white/10 bg-[#07140e]/80 p-5 shadow-2xl shadow-black/30">
         <div className="mb-2 text-xs font-black uppercase tracking-[.18em] text-lime-300/70">рабочий кабинет</div>
-        <h1 className="text-4xl font-black tracking-[-.06em] text-lime-50">{user.role === 'therapist' ? 'Кабинет массажиста' : 'Кабинет клиента'}</h1>
-        <p className="mt-4 text-emerald-50/70">Следующим шагом разнесём клиентский и массажистский кабинет так же подробно, как административный.</p>
+        <h1 className="text-4xl font-black tracking-[-.06em] text-lime-50">Кабинет массажиста</h1>
+        <p className="mt-4 text-emerald-50/70">Следующим шагом разнесём кабинет массажиста так же подробно, как административный и клиентский.</p>
       </div>
     </Shell>
   );
