@@ -6,10 +6,11 @@ import AdminNavigationMenu from './AdminNavigationMenu.jsx';
 import TherapistPortal from './TherapistPortal.jsx';
 import MessageHubV4 from './MessageHubV4.jsx';
 import './visual-theme.css';
+import './messenger-theme.css';
 import './hero-bg.css';
 import './demo-rich-data.js';
 
-const ACTIVE_BUILD = 'messenger-telegram-2026-05-21';
+const ACTIVE_BUILD = 'messenger-accent-2026-05-21';
 const ADMIN_STAFF_DEFAULTS = [
   { id: 'kristina', name: 'Кристина Лакиза', title: 'Директор / старший массажист', phone: '+7 900 100-10-01', address: 'адрес доступен администратору', shift: 0, workStart: 8, workEnd: 20, active: true },
   { id: 'vera', name: 'Вера Соколова', title: 'Массажист', phone: '+7 900 100-10-02', address: 'адрес доступен администратору', shift: 1, workStart: 9, workEnd: 21, active: true },
