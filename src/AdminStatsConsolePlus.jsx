@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const E = 'lakizaAdminSchedulerEvents';
 const C = 'lakizaClientProfiles';
@@ -14,7 +14,6 @@ const mon = (d) => new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'nume
 const m0 = (d) => { const x = new Date(`${d}T12:00:00`); x.setDate(1); return x.toISOString().slice(0, 10); };
 const addM = (d, n) => { const x = new Date(`${d}T12:00:00`); x.setDate(1); x.setMonth(x.getMonth() + n); return x.toISOString().slice(0, 10); };
 const days = (m) => { const first = new Date(`${m0(m)}T12:00:00`); const off = (first.getDay() + 6) % 7; const start = new Date(first); start.setDate(first.getDate() - off); return Array.from({ length: 42 }, (_, i) => { const x = new Date(start); x.setDate(start.getDate() + i); return x.toISOString().slice(0, 10); }); };
-const bmi = (w, h) => Number(w) > 0 && Number(h) > 0 ? (Number(w) / ((Number(h) / 100) ** 2)).toFixed(1) : '—';
 const sl = (s) => ({ new: 'заявка', confirmed: 'подтверждена', done: 'завершена', cancelled: 'отменена', change: 'согласовать' }[s] || s || 'заявка');
 function stat(ev) { const sorted = [...ev].sort((a, b) => dt(a).localeCompare(dt(b))); const measured = sorted.filter((x) => Number(x.weight) > 0); const hrs = sorted.reduce((s, x) => s + Number(x.duration || 0), 0) / 60; const diff = measured.length > 1 ? Number(measured.at(-1).weight) - Number(measured[0].weight) : null; return { total: sorted.length, done: sorted.filter((x) => x.status === 'done').length, future: sorted.filter((x) => dt(x) >= `${today()}T00:00` && x.status !== 'cancelled').length, hours: hrs.toFixed(1), delta: diff === null ? '—' : `${diff > 0 ? '+' : ''}${diff.toFixed(1)} кг`, measured }; }
 
@@ -26,6 +25,7 @@ export default function AdminStatsConsolePlus() {
   const filtered = rows.filter((r) => !q || norm(`${r.client.name} ${r.client.phone} ${r.client.privateNotes} ${r.events.map((e)=>`${e.service} ${e.note} ${e.date}`).join(' ')}`).includes(norm(q)) || digits(r.client.phone).includes(digits(q)));
   const selected = rows.find((r) => r.id === sel);
   const refresh = () => setV((x) => x + 1);
+  useEffect(() => { const openFromMenu = () => { refresh(); setOpen(true); }; window.addEventListener('lakiza:open-client-stats', openFromMenu); return () => window.removeEventListener('lakiza:open-client-stats', openFromMenu); }, []);
   const updateEvent = (id, patch) => { const item = events.find((e) => e.id === id); if (!item || !confirm(`Сохранить изменения ${item.date} ${item.time}?`)) return; save(E, events.map((e) => e.id === id ? { ...e, ...patch } : e)); refresh(); };
   const removeEvent = (id) => { const item = events.find((e) => e.id === id); if (!item || !confirm(`Удалить сеанс ${item.date} ${item.time}?`)) return; save(E, events.filter((e) => e.id !== id)); refresh(); };
   const saveNote = (client, note) => { const exists = clients.some((c) => c.id === client.id); save(C, exists ? clients.map((c) => c.id === client.id ? { ...c, privateNotes: note } : c) : [...clients, { ...client, privateNotes: note }]); refresh(); };
