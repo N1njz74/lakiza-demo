@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 const STORAGE_THREADS = 'lakizaMessengerThreads';
 const STORAGE_EVENTS = 'lakizaAdminSchedulerEvents';
@@ -114,6 +114,29 @@ function baseMessage(authorRole, authorName, text) {
     text,
     at: nowIso(),
   };
+}
+
+function canUseNotifications() {
+  return typeof window !== 'undefined' && 'Notification' in window;
+}
+
+function getNotificationPermission() {
+  if (!canUseNotifications()) return 'unsupported';
+  return Notification.permission;
+}
+
+function notificationLabel(permission) {
+  if (permission === 'granted') return 'Уведомления включены';
+  if (permission === 'denied') return 'Уведомления запрещены';
+  if (permission === 'unsupported') return 'Нет поддержки';
+  return 'Включить уведомления';
+}
+
+function notificationHint(permission) {
+  if (permission === 'granted') return 'Системные уведомления будут появляться при новых входящих сообщениях, когда вкладка скрыта или браузер свернут.';
+  if (permission === 'denied') return 'Браузер заблокировал уведомления. Разрешение нужно включить в настройках сайта.';
+  if (permission === 'unsupported') return 'Этот браузер не поддерживает системные уведомления для сайта.';
+  return 'После разрешения браузера сайт сможет показывать уведомления вне окна вкладки.';
 }
 
 function ensureThreads(threads, user, staff, clients, demoClients, events) {
@@ -245,6 +268,8 @@ export default function MessageHub({ user }) {
   const [activeId, setActiveId] = useState('');
   const [threads, setThreads] = useState(() => readJson(STORAGE_THREADS, []));
   const [draft, setDraft] = useState({ type: 'question', appointmentId: '', requestedDate: '', requestedTime: '', text: '' });
+  const [notificationPermission, setNotificationPermission] = useState(getNotificationPermission);
+  const notifiedMessageIds = useRef(new Set());
 
   const staff = useMemo(() => readJson(STORAGE_STAFF, DEFAULT_STAFF).filter((person) => person.active !== false), [open]);
   const clients = useMemo(() => readJson(STORAGE_CLIENTS, []), [open]);
@@ -271,6 +296,82 @@ export default function MessageHub({ user }) {
     if (activeId && visibleThreads.length && !visibleThreads.some((thread) => thread.id === activeId)) setActiveId(visibleThreads[0].id);
   }, [visibleThreads, activeId]);
 
+  useEffect(() => {
+    visibleThreads.forEach((thread) => {
+      const last = thread.messages?.at(-1);
+      if (last?.id) notifiedMessageIds.current.add(last.id);
+    });
+  }, []);
+
+  const showSystemNotification = (thread) => {
+    const last = thread?.messages?.at(-1);
+    if (!last?.id || last.authorRole === user.role || last.authorRole === 'system') return;
+    if (notifiedMessageIds.current.has(last.id)) return;
+
+    notifiedMessageIds.current.add(last.id);
+    if (!canUseNotifications() || Notification.permission !== 'granted') return;
+    if (!document.hidden && open) return;
+
+    const text = String(last.text || '').replace(/\s+/g, ' ').slice(0, 130);
+    const notification = new Notification(`Лакиза · ${thread.subject || 'новое сообщение'}`, {
+      body: `${last.authorName}: ${text}`,
+      tag: `lakiza-message-${thread.id}`,
+      renotify: true,
+    });
+
+    notification.onclick = () => {
+      window.focus();
+      setActiveId(thread.id);
+      setOpen(true);
+      notification.close();
+    };
+
+    setTimeout(() => notification.close(), 9000);
+  };
+
+  useEffect(() => {
+    const onStorage = (event) => {
+      if (event.key !== STORAGE_THREADS || !event.newValue) return;
+      try {
+        const nextThreads = JSON.parse(event.newValue) || [];
+        const nextVisible = filterThreads(nextThreads, user, staff);
+        nextVisible.forEach(showSystemNotification);
+        setThreads(nextThreads);
+      } catch {}
+    };
+
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [user, staff, open]);
+
+  const requestNotificationPermission = async () => {
+    if (!canUseNotifications()) {
+      setNotificationPermission('unsupported');
+      return;
+    }
+
+    if (Notification.permission === 'denied') {
+      setNotificationPermission('denied');
+      return;
+    }
+
+    const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+    setNotificationPermission(permission);
+
+    if (permission === 'granted') {
+      const notification = new Notification('Лакиза', {
+        body: 'Уведомления по сообщениям включены.',
+        tag: 'lakiza-notifications-enabled',
+      });
+      notification.onclick = () => {
+        window.focus();
+        setOpen(true);
+        notification.close();
+      };
+      setTimeout(() => notification.close(), 5000);
+    }
+  };
+
   const persist = (next) => {
     setThreads(next);
     saveJson(STORAGE_THREADS, next);
@@ -280,6 +381,7 @@ export default function MessageHub({ user }) {
     const text = reply.trim();
     if (!text || !activeThread) return;
     const message = baseMessage(user.role, userName(user), text);
+    notifiedMessageIds.current.add(message.id);
     const next = threads.map((thread) => thread.id === activeThread.id ? { ...thread, status: thread.status === 'resolved' ? 'open' : thread.status, updatedAt: nowIso(), messages: [...(thread.messages || []), message] } : thread);
     persist(next);
     setReply('');
@@ -288,6 +390,7 @@ export default function MessageHub({ user }) {
   const setThreadStatus = (status) => {
     if (!activeThread) return;
     const message = baseMessage('system', 'Система', `Статус обращения: ${statusLabel(status)}.`);
+    notifiedMessageIds.current.add(message.id);
     const next = threads.map((thread) => thread.id === activeThread.id ? { ...thread, status, updatedAt: nowIso(), messages: [...(thread.messages || []), message] } : thread);
     persist(next);
   };
@@ -308,6 +411,8 @@ export default function MessageHub({ user }) {
     if (lines.length <= 1 && !draft.text.trim()) return;
 
     const id = `request-${Date.now()}`;
+    const message = baseMessage('client', clientName, lines.join('\n'));
+    notifiedMessageIds.current.add(message.id);
     const thread = {
       id,
       type: draft.type,
@@ -322,7 +427,7 @@ export default function MessageHub({ user }) {
       appointmentId: selectedEvent?.id || '',
       requestedDate: draft.requestedDate,
       requestedTime: draft.requestedTime,
-      messages: [baseMessage('client', clientName, lines.join('\n'))],
+      messages: [message],
     };
 
     const next = [thread, ...threads];
@@ -346,13 +451,18 @@ export default function MessageHub({ user }) {
 
       {open && (
         <div className="fixed bottom-20 right-2 z-[96] flex h-[82vh] w-[calc(100vw-1rem)] max-w-5xl flex-col overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#06140d]/96 shadow-2xl shadow-black/60 backdrop-blur-xl md:bottom-6 md:right-24 md:h-[760px] md:max-h-[calc(100vh-3rem)]">
-          <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
             <div>
               <div className="text-[10px] font-black uppercase tracking-[.18em] text-lime-300/65">сообщения</div>
               <h2 className="text-xl font-black tracking-[-.04em] text-lime-50">Центр обращений</h2>
             </div>
-            <button type="button" onClick={() => setOpen(false)} className="rounded-full bg-white/10 px-4 py-2 text-xs font-black text-lime-50">Закрыть</button>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <button type="button" onClick={requestNotificationPermission} disabled={notificationPermission === 'unsupported'} className={cx('rounded-full px-4 py-2 text-xs font-black', notificationPermission === 'granted' ? 'bg-lime-200 text-emerald-950' : notificationPermission === 'denied' ? 'bg-red-500/20 text-red-100' : 'bg-blue-600 text-white')}>{notificationLabel(notificationPermission)}</button>
+              <button type="button" onClick={() => setOpen(false)} className="rounded-full bg-white/10 px-4 py-2 text-xs font-black text-lime-50">Закрыть</button>
+            </div>
           </div>
+
+          <div className="border-b border-white/5 px-4 py-2 text-[10px] font-bold text-emerald-50/45">{notificationHint(notificationPermission)}</div>
 
           <div className="grid min-h-0 flex-1 md:grid-cols-[330px_1fr]">
             <aside className="min-h-0 overflow-y-auto border-b border-white/10 p-3 md:border-b-0 md:border-r">
