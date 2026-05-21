@@ -44,11 +44,28 @@ function scrollToId(id) {
 export default function MarketingLanding({ build, mode, setMode, form, setField, message, signIn, register }) {
   return (
     <main className="min-h-screen overflow-hidden bg-[#041008] text-white selection:bg-lime-200 selection:text-emerald-950">
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_18%_8%,rgba(207,255,128,.28),transparent_28%),radial-gradient(circle_at_86%_14%,rgba(130,255,86,.18),transparent_30%),radial-gradient(circle_at_50%_56%,rgba(25,82,46,.25),transparent_40%),linear-gradient(180deg,#031008_0%,#092115_45%,#041008_100%)]" />
-      <div className="pointer-events-none fixed inset-0 opacity-70 [background-image:linear-gradient(rgba(216,255,135,.06)_1px,transparent_1px),linear-gradient(90deg,rgba(216,255,135,.05)_1px,transparent_1px)] [background-size:52px_52px]" />
+      <style>{`
+        @keyframes lakizaHeroPan {
+          0% { transform: scale(1.06) translate3d(0, 0, 0); }
+          50% { transform: scale(1.13) translate3d(-2.8%, 1.2%, 0); }
+          100% { transform: scale(1.06) translate3d(0, 0, 0); }
+        }
+        @keyframes lakizaSoftPulse {
+          0%,100% { opacity: .55; transform: scale(1); }
+          50% { opacity: .82; transform: scale(1.04); }
+        }
+        .lakiza-hero-img { animation: lakizaHeroPan 34s ease-in-out infinite; will-change: transform; }
+        .lakiza-orb { animation: lakizaSoftPulse 8s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .lakiza-hero-img, .lakiza-orb { animation: none; }
+        }
+      `}</style>
+
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_18%_8%,rgba(207,255,128,.22),transparent_28%),radial-gradient(circle_at_86%_14%,rgba(130,255,86,.12),transparent_30%),linear-gradient(180deg,#031008_0%,#092115_45%,#041008_100%)]" />
+      <div className="pointer-events-none fixed inset-0 opacity-50 [background-image:linear-gradient(rgba(216,255,135,.045)_1px,transparent_1px),linear-gradient(90deg,rgba(216,255,135,.04)_1px,transparent_1px)] [background-size:52px_52px]" />
 
       <header className="fixed left-0 right-0 top-0 z-50 px-2 pt-2 md:px-6">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 rounded-[1.1rem] border border-white/10 bg-[#06140d]/88 px-3 py-2 shadow-2xl shadow-black/35 backdrop-blur-xl md:px-5">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 rounded-[1.1rem] border border-white/10 bg-[#06140d]/78 px-3 py-2 shadow-2xl shadow-black/35 backdrop-blur-xl md:px-5">
           <button type="button" onClick={() => scrollToId('top')} className="flex min-w-0 items-center gap-3 text-left">
             <BrandMark />
             <span className="min-w-0">
@@ -69,43 +86,39 @@ export default function MarketingLanding({ build, mode, setMode, form, setField,
         </div>
       </header>
 
-      <section id="top" className="relative mx-auto grid min-h-screen max-w-7xl items-center gap-5 px-3 pb-10 pt-28 md:px-6 lg:grid-cols-[1.1fr_430px]">
-        <div className="relative rounded-[2.4rem] border border-white/10 bg-white/[.06] p-5 shadow-2xl shadow-black/40 backdrop-blur-xl md:p-10">
-          <div className="mb-5 flex flex-wrap gap-2">
-            <Badge text="онлайн-запись" />
-            <Badge text="личный кабинет" />
-            <Badge text="курсы массажа" />
-          </div>
-          <h1 className="max-w-4xl text-5xl font-black leading-[.88] tracking-[-.075em] text-lime-50 md:text-7xl lg:text-8xl">
-            Массаж, который хочется продолжать курсом
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/72">
-            Сайт «Лакиза» теперь не только записывает клиентов, но и продаёт услугу: объясняет пользу, показывает направления, ведёт клиента к заявке и дальше сопровождает его через личный кабинет.
-          </p>
-          <div className="relative mt-7 overflow-hidden rounded-[1.6rem] border border-lime-200/15 bg-black/35 shadow-2xl shadow-black/35">
-            <img src={heroMassageImage} alt="Премиальный массажный кабинет Лакиза с моховым знаком инь-янь" className="h-56 w-full object-cover object-left md:h-72" loading="eager" />
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(4,16,8,.12),rgba(4,16,8,.5)_62%,rgba(4,16,8,.78)),linear-gradient(0deg,rgba(4,16,8,.72),transparent_45%)]" />
-            <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-end justify-between gap-2">
-              <div className="rounded-2xl border border-white/10 bg-black/40 px-3 py-2 backdrop-blur-md">
-                <div className="text-[9px] font-black uppercase tracking-[.16em] text-lime-300/75">атмосфера кабинета</div>
-                <div className="text-sm font-black text-lime-50">мох · тёплый свет · спокойствие</div>
-              </div>
-              <div className="rounded-full bg-lime-200 px-3 py-2 text-xs font-black text-emerald-950">запись онлайн</div>
+      <section id="top" className="relative min-h-[100svh] overflow-hidden">
+        <img src={heroMassageImage} alt="Премиальный массажный кабинет Лакиза с моховым знаком инь-янь" className="lakiza-hero-img absolute inset-0 h-full w-full object-cover object-[24%_center]" loading="eager" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(4,16,8,.84)_0%,rgba(4,16,8,.54)_42%,rgba(4,16,8,.18)_74%,rgba(4,16,8,.68)_100%),linear-gradient(0deg,rgba(4,16,8,.96)_0%,rgba(4,16,8,.25)_42%,rgba(4,16,8,.68)_100%)]" />
+        <div className="lakiza-orb pointer-events-none absolute left-[8%] top-[18%] h-56 w-56 rounded-full bg-lime-200/20 blur-3xl md:h-80 md:w-80" />
+
+        <div className="relative mx-auto grid min-h-[100svh] max-w-7xl items-end gap-5 px-3 pb-8 pt-28 md:px-6 lg:grid-cols-[1.08fr_430px] lg:items-center lg:pb-10">
+          <div className="max-w-4xl rounded-[2.2rem] border border-white/10 bg-[#041008]/42 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm md:p-8 lg:bg-[#041008]/32">
+            <div className="mb-5 flex flex-wrap gap-2">
+              <Badge text="премиальный кабинет" />
+              <Badge text="онлайн-запись" />
+              <Badge text="курсы массажа" />
+            </div>
+            <h1 className="max-w-4xl text-5xl font-black leading-[.88] tracking-[-.075em] text-lime-50 drop-shadow-2xl md:text-7xl lg:text-8xl">
+              Массаж в атмосфере тишины, мха и тёплого света
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg font-semibold leading-8 text-emerald-50/82 drop-shadow-lg">
+              «Лакиза» — место, где запись, курс сеансов, история посещений и забота о теле собраны в одном личном кабинете.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <button type="button" onClick={() => scrollToId('auth')} className="rounded-full bg-lime-200 px-6 py-4 text-sm font-black text-emerald-950 shadow-xl shadow-lime-950/20">Записаться на массаж</button>
+              <button type="button" onClick={() => scrollToId('services')} className="rounded-full border border-white/20 bg-black/25 px-6 py-4 text-sm font-black text-lime-50 backdrop-blur-md">Посмотреть услуги</button>
+            </div>
+            <div className="mt-8 grid gap-2 sm:grid-cols-3">
+              <HeroMetric value="08–21" label="гибкое рабочее время" />
+              <HeroMetric value="2/2" label="графики массажистов" />
+              <HeroMetric value="курс" label="история и статистика" />
             </div>
           </div>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <button type="button" onClick={() => scrollToId('auth')} className="rounded-full bg-lime-200 px-6 py-4 text-sm font-black text-emerald-950 shadow-xl shadow-lime-950/20">Записаться на массаж</button>
-            <button type="button" onClick={() => scrollToId('services')} className="rounded-full border border-white/15 bg-white/10 px-6 py-4 text-sm font-black text-lime-50">Посмотреть услуги</button>
-          </div>
-          <div className="mt-8 grid gap-2 sm:grid-cols-3">
-            <HeroMetric value="08–21" label="гибкое рабочее время" />
-            <HeroMetric value="2/2" label="графики массажистов" />
-            <HeroMetric value="курс" label="история и статистика" />
-          </div>
-          <div className="pointer-events-none absolute -bottom-10 -right-10 h-44 w-44 rounded-full bg-lime-200/10 blur-3xl" />
-        </div>
 
-        <AuthCard mode={mode} setMode={setMode} form={form} setField={setField} message={message} signIn={signIn} register={register} />
+          <div className="lg:translate-y-8">
+            <AuthCard mode={mode} setMode={setMode} form={form} setField={setField} message={message} signIn={signIn} register={register} />
+          </div>
+        </div>
       </section>
 
       <section className="relative mx-auto max-w-7xl px-3 py-8 md:px-6" id="services">
@@ -114,6 +127,8 @@ export default function MarketingLanding({ build, mode, setMode, form, setField,
           {services.map((item) => <ServiceCard key={item.title} item={item} />)}
         </div>
       </section>
+
+      <VisualBreak title="Кабинет, который работает на доверие" text="Дальше сюда добавим отдельные кадры: руки мастера, детали интерьера, массажный стол, моховой знак, карточку курса." />
 
       <section id="course" className="relative mx-auto max-w-7xl px-3 py-8 md:px-6">
         <div className="grid gap-4 lg:grid-cols-[.85fr_1.15fr]">
@@ -152,10 +167,13 @@ export default function MarketingLanding({ build, mode, setMode, form, setField,
 
       <section className="relative mx-auto max-w-7xl px-3 py-8 md:px-6" id="auth">
         <div className="grid gap-4 lg:grid-cols-[1fr_430px]">
-          <div className="rounded-[2rem] border border-white/10 bg-white/[.06] p-5 backdrop-blur-xl md:p-8">
-            <div className="text-[10px] font-black uppercase tracking-[.18em] text-lime-300/70">финальный экран</div>
-            <h2 className="mt-2 text-4xl font-black leading-none tracking-[-.06em] text-lime-50 md:text-6xl">Готовы подобрать время?</h2>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-emerald-50/65">Регистрация нужна, чтобы сохранить будущие записи, историю посещений, переносы и напоминания. Клиентский кабинет становится продолжением сайта-визитки.</p>
+          <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[.06] backdrop-blur-xl">
+            <div className="h-52 bg-cover bg-center" style={{ backgroundImage: `linear-gradient(90deg,rgba(4,16,8,.74),rgba(4,16,8,.2)),url(${heroMassageImage})` }} />
+            <div className="p-5 md:p-8">
+              <div className="text-[10px] font-black uppercase tracking-[.18em] text-lime-300/70">финальный экран</div>
+              <h2 className="mt-2 text-4xl font-black leading-none tracking-[-.06em] text-lime-50 md:text-6xl">Готовы подобрать время?</h2>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-emerald-50/65">Регистрация нужна, чтобы сохранить будущие записи, историю посещений, переносы и напоминания. Клиентский кабинет становится продолжением сайта-визитки.</p>
+            </div>
           </div>
           <AuthCard mode={mode} setMode={setMode} form={form} setField={setField} message={message} signIn={signIn} register={register} compact />
         </div>
@@ -169,18 +187,19 @@ export default function MarketingLanding({ build, mode, setMode, form, setField,
 }
 
 function NavButton({ id, text }) { return <button type="button" onClick={() => scrollToId(id)} className="rounded-full px-3 py-2 text-xs font-black text-emerald-50/70 transition hover:bg-white/10 hover:text-lime-100">{text}</button>; }
-function Badge({ text }) { return <span className="rounded-full border border-lime-200/20 bg-lime-200/10 px-3 py-1 text-[10px] font-black uppercase tracking-[.14em] text-lime-200/80">{text}</span>; }
+function Badge({ text }) { return <span className="rounded-full border border-lime-200/20 bg-lime-200/10 px-3 py-1 text-[10px] font-black uppercase tracking-[.14em] text-lime-200/80 backdrop-blur-md">{text}</span>; }
 function BrandMark() { return <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full bg-lime-200 shadow-[0_0_28px_rgba(216,255,135,.22)]"><span className="h-8 w-8 rounded-full bg-[conic-gradient(from_45deg,#07140e_0_50%,#7ed957_50%_100%)] shadow-inner shadow-black/40" /></span>; }
-function HeroMetric({ value, label }) { return <div className="rounded-2xl bg-black/22 p-4"><b className="block text-2xl font-black text-lime-100">{value}</b><span className="text-xs font-bold text-emerald-50/50">{label}</span></div>; }
+function HeroMetric({ value, label }) { return <div className="rounded-2xl border border-white/10 bg-black/32 p-4 backdrop-blur-md"><b className="block text-2xl font-black text-lime-100">{value}</b><span className="text-xs font-bold text-emerald-50/62">{label}</span></div>; }
 function SectionTitle({ eyebrow, title, text }) { return <div className="mb-5 max-w-3xl"><div className="text-[10px] font-black uppercase tracking-[.18em] text-lime-300/70">{eyebrow}</div><h2 className="mt-2 text-4xl font-black leading-none tracking-[-.06em] text-lime-50 md:text-6xl">{title}</h2><p className="mt-3 text-sm leading-7 text-emerald-50/62">{text}</p></div>; }
 function ServiceCard({ item }) { return <div className="group rounded-[1.6rem] border border-white/10 bg-white/[.07] p-5 shadow-xl shadow-black/20 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/[.1]"><div className="mb-4 h-24 rounded-2xl bg-[radial-gradient(circle_at_25%_20%,rgba(216,255,135,.5),transparent_30%),linear-gradient(135deg,rgba(216,255,135,.18),rgba(255,255,255,.04))]" /><h3 className="text-2xl font-black tracking-[-.04em] text-lime-50">{item.title}</h3><p className="mt-2 min-h-[72px] text-sm leading-6 text-emerald-50/62">{item.text}</p><div className="mt-4 flex items-center justify-between gap-2"><span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black text-lime-100">{item.time}</span><b className="text-sm text-lime-200">{item.price}</b></div></div>; }
 function Benefit({ title, text }) { return <div className="rounded-[1.5rem] border border-white/10 bg-white/[.07] p-5 backdrop-blur-xl"><b className="block text-xl text-lime-100">{title}</b><p className="mt-2 text-sm leading-6 text-emerald-50/58">{text}</p></div>; }
 function Step({ num, title, text }) { return <div className="rounded-[1.5rem] border border-white/10 bg-white/[.06] p-5"><span className="grid h-10 w-10 place-items-center rounded-full bg-lime-200 text-sm font-black text-emerald-950">{num}</span><b className="mt-4 block text-lg text-lime-100">{title}</b><p className="mt-2 text-sm leading-6 text-emerald-50/58">{text}</p></div>; }
 function Therapist({ name, role, text }) { return <div className="rounded-[1.5rem] border border-white/10 bg-white/[.07] p-5 backdrop-blur-xl"><div className="mb-4 h-28 rounded-2xl bg-[radial-gradient(circle_at_50%_20%,rgba(216,255,135,.42),transparent_28%),linear-gradient(180deg,rgba(9,33,21,.2),rgba(216,255,135,.08))]" /><b className="block text-xl text-lime-100">{name}</b><span className="text-xs font-black uppercase tracking-[.12em] text-lime-200/55">{role}</span><p className="mt-2 text-sm leading-6 text-emerald-50/58">{text}</p></div>; }
 function Faq({ q, a }) { return <div className="rounded-[1.4rem] border border-white/10 bg-white/[.06] p-5"><b className="block text-lg text-lime-100">{q}</b><p className="mt-2 text-sm leading-6 text-emerald-50/58">{a}</p></div>; }
+function VisualBreak({ title, text }) { return <section className="relative mx-auto max-w-7xl px-3 py-8 md:px-6"><div className="relative min-h-[420px] overflow-hidden rounded-[2.2rem] border border-white/10 bg-black shadow-2xl shadow-black/40"><div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroMassageImage})` }} /><div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(4,16,8,.9),rgba(4,16,8,.45)_50%,rgba(4,16,8,.14)),linear-gradient(0deg,rgba(4,16,8,.9),transparent_60%)]" /><div className="relative flex min-h-[420px] max-w-2xl flex-col justify-end p-6 md:p-10"><div className="text-[10px] font-black uppercase tracking-[.18em] text-lime-300/70">визуальный блок</div><h2 className="mt-2 text-4xl font-black leading-none tracking-[-.06em] text-lime-50 md:text-6xl">{title}</h2><p className="mt-4 text-sm leading-7 text-emerald-50/70">{text}</p></div></div></section>; }
 
 function AuthCard({ mode, setMode, form, setField, message, signIn, register, compact = false }) {
-  return <div className="rounded-[2rem] border border-white/10 bg-[#07140e]/92 p-5 shadow-2xl shadow-black/45 backdrop-blur-xl">
+  return <div className="rounded-[2rem] border border-white/10 bg-[#07140e]/88 p-5 shadow-2xl shadow-black/45 backdrop-blur-xl">
     <div className="mb-4 grid grid-cols-2 gap-2 rounded-2xl bg-white/5 p-1"><button type="button" onClick={() => setMode('login')} className={`rounded-xl px-4 py-3 text-sm font-black ${mode === 'login' ? 'bg-lime-200 text-emerald-950' : 'text-emerald-50/65'}`}>Вход</button><button type="button" onClick={() => setMode('register')} className={`rounded-xl px-4 py-3 text-sm font-black ${mode === 'register' ? 'bg-lime-200 text-emerald-950' : 'text-emerald-50/65'}`}>Регистрация</button></div>
     {!compact && <div className="mb-4 rounded-2xl bg-lime-200/10 p-3 text-xs font-bold text-lime-100/80">Запись, история сеансов, переносы и напоминания доступны после входа.</div>}
     <div className="space-y-3">{mode === 'register' ? <><Input label="Имя *" value={form.name} onChange={(value) => setField('name', value)} placeholder="Иван" /><Input label="Фамилия *" value={form.surname} onChange={(value) => setField('surname', value)} placeholder="Иванов" /><Input label="Телефон *" type="tel" value={form.phone} onChange={(value) => setField('phone', value)} placeholder="+7 900 000-00-00" /><Input label="Email" type="email" value={form.email} onChange={(value) => setField('email', value)} placeholder="name@example.ru" /></> : <Input label="Телефон" value={form.login} onChange={(value) => setField('login', value)} placeholder="+7 900 000-00-00 или admin/master" />}<Input label="Пароль" type="password" value={form.password} onChange={(value) => setField('password', value)} placeholder={mode === 'login' ? 'пароль' : 'минимум 4 символа'} /></div>
