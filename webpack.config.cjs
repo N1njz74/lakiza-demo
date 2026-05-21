@@ -5,7 +5,7 @@ module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
 
   return {
-    entry: ['./src/main.jsx', './src/calendarEnhance.js'],
+    entry: ['./src/marketing-main.jsx', './src/calendarEnhance.js'],
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: 'assets/[name].[contenthash].js',
