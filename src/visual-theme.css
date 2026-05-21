@@ -93,6 +93,12 @@
   opacity: .5;
 }
 
+/* Админские быстрые кнопки перенесены в общее меню. Нижний правый угол оставлен под мессенджер. */
+button[class~="bottom-24"][class~="right-3"][class~="z-[70]"],
+button[class~="bottom-40"][class~="right-3"][class~="z-[70]"] {
+  display: none !important;
+}
+
 @media (max-width: 640px) {
   .salon-decor__couch { width: 250px; height: 82px; right: -92px; bottom: 7%; opacity: .18; }
   .salon-decor__hands { width: 180px; height: 120px; left: -86px; top: 42%; opacity: .12; }
