@@ -3,11 +3,12 @@ import ClientPortal from './ClientPortal.jsx';
 import AdminStatsConsolePlus from './AdminStatsConsolePlus.jsx';
 import StaffScheduleConsole from './StaffScheduleConsole.jsx';
 import AdminNavigationMenu from './AdminNavigationMenu.jsx';
+import TherapistPortal from './TherapistPortal.jsx';
 import './visual-theme.css';
 import './hero-bg.css';
 import './demo-rich-data.js';
 
-const ACTIVE_BUILD = 'admin-menu-hours-0206';
+const ACTIVE_BUILD = 'therapist-cabinet-0234';
 const ADMIN_STAFF_DEFAULTS = [
   { id: 'kristina', name: 'Кристина Лакиза', title: 'Директор / старший массажист', phone: '+7 900 100-10-01', address: 'адрес доступен администратору', shift: 0, workStart: 8, workEnd: 20, active: true },
   { id: 'vera', name: 'Вера Соколова', title: 'Массажист', phone: '+7 900 100-10-02', address: 'адрес доступен администратору', shift: 1, workStart: 9, workEnd: 21, active: true },
@@ -35,7 +36,7 @@ function ensureAdminAddressDemoData() {
 export default function RoleApp({ user, logout, onUserUpdate }) {
   if (user.role === 'admin') { ensureAdminAddressDemoData(); return <Shell user={user} logout={logout}><AdminNavigationMenu role={user.role} /><AdminPro /><AdminStatsConsolePlus /><StaffScheduleConsole /></Shell>; }
   if (user.role === 'client') return <Shell user={user} logout={logout}><ClientPortal user={user} onUserUpdate={onUserUpdate} /></Shell>;
-  return <Shell user={user} logout={logout}><div className="rounded-[2rem] border border-white/10 bg-[#07140e]/80 p-5 shadow-2xl shadow-black/30"><div className="mb-2 text-xs font-black uppercase tracking-[.18em] text-lime-300/70">рабочий кабинет</div><h1 className="text-4xl font-black tracking-[-.06em] text-lime-50">Кабинет массажиста</h1><p className="mt-4 text-emerald-50/70">Следующим шагом разнесём кабинет массажиста так же подробно, как административный и клиентский.</p></div></Shell>;
+  return <Shell user={user} logout={logout}><TherapistPortal user={user} /></Shell>;
 }
 
 function Shell({ user, logout, children }) {
