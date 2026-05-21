@@ -1,43 +1,49 @@
 const logoSvg = `
-  <svg viewBox="0 0 100 100" class="lakiza-inline-logo__svg" role="img" aria-label="Логотип Лакиза — инь-янь из зелёного и чёрного мха">
+  <svg viewBox="0 0 128 128" class="lakiza-inline-logo__svg" role="img" aria-label="Логотип Лакиза — инь-янь из зелёного и чёрного мха">
     <defs>
-      <radialGradient id="lakizaMossGreen" cx="33%" cy="24%" r="72%">
-        <stop offset="0" stop-color="#efffd5"/>
-        <stop offset="0.22" stop-color="#bfff62"/>
-        <stop offset="0.55" stop-color="#6aa83b"/>
-        <stop offset="1" stop-color="#102417"/>
+      <radialGradient id="lakizaMossGreen" cx="31%" cy="23%" r="78%">
+        <stop offset="0" stop-color="#f0ffd8"/>
+        <stop offset="0.24" stop-color="#cfff7a"/>
+        <stop offset="0.62" stop-color="#76b946"/>
+        <stop offset="1" stop-color="#16341f"/>
       </radialGradient>
-      <radialGradient id="lakizaMossDark" cx="70%" cy="70%" r="76%">
-        <stop offset="0" stop-color="#244b2b"/>
-        <stop offset="0.48" stop-color="#0f2518"/>
-        <stop offset="1" stop-color="#020806"/>
+      <radialGradient id="lakizaMossDark" cx="70%" cy="72%" r="82%">
+        <stop offset="0" stop-color="#385f35"/>
+        <stop offset="0.42" stop-color="#13281a"/>
+        <stop offset="1" stop-color="#030806"/>
       </radialGradient>
-      <filter id="lakizaMossTexture" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" seed="9" result="noise"/>
-        <feColorMatrix in="noise" type="saturate" values="0" result="mono"/>
-        <feBlend in="SourceGraphic" in2="mono" mode="overlay"/>
-      </filter>
-      <filter id="lakizaLogoGlow" x="-35%" y="-35%" width="170%" height="170%">
-        <feGaussianBlur stdDeviation="2.7" result="blur"/>
-        <feColorMatrix in="blur" values="0 0 0 0 0.65 0 0 0 0 1 0 0 0 0 0.18 0 0 0 .72 0"/>
+      <linearGradient id="lakizaRim" x1="16" y1="10" x2="114" y2="118">
+        <stop offset="0" stop-color="#efffd5" stop-opacity=".95"/>
+        <stop offset=".45" stop-color="#85bf4c" stop-opacity=".55"/>
+        <stop offset="1" stop-color="#0b1b12" stop-opacity=".92"/>
+      </linearGradient>
+      <filter id="lakizaSoftGlow" x="-25%" y="-25%" width="150%" height="150%">
+        <feGaussianBlur stdDeviation="2.2" result="blur"/>
+        <feColorMatrix in="blur" values="0 0 0 0 .64 0 0 0 0 1 0 0 0 0 .28 0 0 0 .55 0"/>
         <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
     </defs>
-    <circle cx="50" cy="50" r="46" fill="#06140d" stroke="rgba(220,255,150,.42)" stroke-width="2" filter="url(#lakizaLogoGlow)"/>
-    <g filter="url(#lakizaMossTexture)">
-      <circle cx="50" cy="50" r="42" fill="url(#lakizaMossGreen)"/>
-      <path d="M50 8a42 42 0 0 1 0 84c-13.8 0-21-9.4-21-21s7.2-21 21-21 21-9.4 21-21S63.8 8 50 8z" fill="url(#lakizaMossDark)"/>
-      <circle cx="50" cy="29" r="7.5" fill="#07140e"/>
-      <circle cx="50" cy="71" r="7.5" fill="#cfff85"/>
+    <circle cx="64" cy="64" r="58" fill="#05120b" filter="url(#lakizaSoftGlow)"/>
+    <circle cx="64" cy="64" r="55" fill="none" stroke="url(#lakizaRim)" stroke-width="5"/>
+    <circle cx="64" cy="64" r="49" fill="url(#lakizaMossGreen)"/>
+    <path d="M64 15a49 49 0 0 1 0 98c-15.5 0-24.5-10.5-24.5-24.5S48.5 64 64 64s24.5-10.5 24.5-24.5S79.5 15 64 15z" fill="url(#lakizaMossDark)"/>
+    <circle cx="64" cy="39.5" r="8.5" fill="#07110c"/>
+    <circle cx="64" cy="88.5" r="8.5" fill="#d7ff8a"/>
+    <g opacity=".24" fill="none" stroke-linecap="round">
+      <path d="M32 33c8-8 17-12 30-13" stroke="#efffd5" stroke-width="3"/>
+      <path d="M24 64c2 17 11 30 26 38" stroke="#9edc61" stroke-width="2"/>
+      <path d="M79 26c17 8 27 24 25 43" stroke="#263529" stroke-width="3"/>
+      <path d="M72 104c14-3 24-11 29-24" stroke="#0b160f" stroke-width="2"/>
     </g>
-    <circle cx="50" cy="50" r="43" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+    <circle cx="64" cy="64" r="49" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1"/>
   </svg>
 `;
 
 function applyLakizaLogo() {
-  document.querySelectorAll('.moss-logo, span.relative.grid.h-11.w-11, span.relative.grid.h-12.w-12').forEach((mark) => {
-    if (mark.dataset.logoApplied === 'true') return;
+  document.querySelectorAll('.moss-logo, span.relative.grid.h-11.w-11, span.relative.grid.h-12.w-12, .lakiza-inline-logo').forEach((mark) => {
+    if (mark.dataset.logoVersion === 'sharp-128') return;
     mark.dataset.logoApplied = 'true';
+    mark.dataset.logoVersion = 'sharp-128';
     mark.className = 'lakiza-inline-logo';
     mark.innerHTML = logoSvg;
   });
@@ -62,13 +68,16 @@ style.textContent = `
     border-radius: 999px;
     overflow: visible;
     background: transparent;
-    filter: drop-shadow(0 0 16px rgba(201,255,116,.28));
+    transform: translateZ(0);
+    filter: drop-shadow(0 0 12px rgba(201,255,116,.34));
   }
   .lakiza-inline-logo__svg {
     width: 100%;
     height: 100%;
     display: block;
     border-radius: 999px;
+    shape-rendering: geometricPrecision;
+    text-rendering: geometricPrecision;
   }
   @media (min-width: 768px) {
     .lakiza-inline-logo { width: 3.35rem; height: 3.35rem; }
