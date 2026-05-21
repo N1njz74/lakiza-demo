@@ -1,3 +1,5 @@
+import heroMassageImage from './assets/lakiza-hero-massage.webp';
+
 const services = [
   { title: 'Спина и шея', text: 'Снять напряжение после работы, телефона, вождения и долгого сидения.', time: '60 мин', price: 'от 2 000 ₽' },
   { title: 'Классический массаж', text: 'Общий оздоровительный формат: спина, плечи, ноги, руки, расслабление.', time: '90 мин', price: 'от 2 800 ₽' },
@@ -80,6 +82,17 @@ export default function MarketingLanding({ build, mode, setMode, form, setField,
           <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50/72">
             Сайт «Лакиза» теперь не только записывает клиентов, но и продаёт услугу: объясняет пользу, показывает направления, ведёт клиента к заявке и дальше сопровождает его через личный кабинет.
           </p>
+          <div className="relative mt-7 overflow-hidden rounded-[1.6rem] border border-lime-200/15 bg-black/35 shadow-2xl shadow-black/35">
+            <img src={heroMassageImage} alt="Премиальный массажный кабинет Лакиза с моховым знаком инь-янь" className="h-56 w-full object-cover object-left md:h-72" loading="eager" />
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(4,16,8,.12),rgba(4,16,8,.5)_62%,rgba(4,16,8,.78)),linear-gradient(0deg,rgba(4,16,8,.72),transparent_45%)]" />
+            <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-end justify-between gap-2">
+              <div className="rounded-2xl border border-white/10 bg-black/40 px-3 py-2 backdrop-blur-md">
+                <div className="text-[9px] font-black uppercase tracking-[.16em] text-lime-300/75">атмосфера кабинета</div>
+                <div className="text-sm font-black text-lime-50">мох · тёплый свет · спокойствие</div>
+              </div>
+              <div className="rounded-full bg-lime-200 px-3 py-2 text-xs font-black text-emerald-950">запись онлайн</div>
+            </div>
+          </div>
           <div className="mt-7 flex flex-wrap gap-3">
             <button type="button" onClick={() => scrollToId('auth')} className="rounded-full bg-lime-200 px-6 py-4 text-sm font-black text-emerald-950 shadow-xl shadow-lime-950/20">Записаться на массаж</button>
             <button type="button" onClick={() => scrollToId('services')} className="rounded-full border border-white/15 bg-white/10 px-6 py-4 text-sm font-black text-lime-50">Посмотреть услуги</button>
